@@ -35,7 +35,7 @@ import java.util.Map;
 public class Bot {
     private static String CODE;
     private static final int CLIENT_ID =6358381;
-    private static final String CLIENT_SECRET="iXDTP9oKQ36hzTUEFdT0",AI_CLIENT="77d5f2c00a21490b897ad42fd6307903",
+    private static final String CLIENT_SECRET="client-secret",AI_CLIENT="ai-client",
         REDIRECTED_URI="http://vk.com/blank.html";
     public static final String APP_WEATHER_ID="544cde73017001c30cab9b8b7d18a416";
     private UserActor user;
