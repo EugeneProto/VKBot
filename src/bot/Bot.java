@@ -35,9 +35,9 @@ import java.util.Map;
 public class Bot {
     private static String CODE;
     private static final int CLIENT_ID =6358381;
-    private static final String CLIENT_SECRET="client-secret",AI_CLIENT="ai-client",
+    private static final String CLIENT_SECRET="your-client-secret",AI_CLIENT="your-ai-client",
         REDIRECTED_URI="http://vk.com/blank.html";
-    public static final String APP_WEATHER_ID="544cde73017001c30cab9b8b7d18a416";
+    public static final String APP_WEATHER_ID="your-app-weather-id";
     private UserActor user;
     private VkApiClient vk;
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
