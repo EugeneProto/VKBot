@@ -33,7 +33,10 @@ public class MessageReplier {
                     "5.Прогноз погоды. Синтаксис запроса: \"Погода <город (в именительном падеже)> <код страны>\"."+
                     "Пример: \"Погода Москва ру\" или \"Погода Moscow ru\""+
                     bot.getEmojies().get("thermometer")+"\n" +
-                    "6.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "6.\"Юджин, поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
+                    " будет угадать, пользуясь тремя командами: \">(число)\" больше, \"<(число)\" меньше" +
+                    ", \"(число)\".\n"+
+                    "7.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.matches("юджин,? ?лайки на стене.*|1.*")){
@@ -54,7 +57,10 @@ public class MessageReplier {
             bot.sendMessage(addressee.getId(),"Курс: "+btrate[0]+dollar+"\n"+
                     "Покупка: "+btrate[1]+dollar+"\n"+
                     "Продажа: "+btrate[2]+dollar);
-        }else if (data.matches("юджин,? ?пошли меня.*|5.*")){
+        }else if(data.matches("юджин,? ?поиграем.*|6.*")){
+            bot.startNewGame(addressee.getId());
+            bot.sendMessage(addressee.getId(),"Число загадано и игра началась!");
+        }else if (data.matches("юджин,? ?пошли меня.*|7.*")){
             bot.sendMessage(addressee.getId(),"Я, конечно, культурный бот, но раз ты просишь...\n" +
                     addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"+bot.getEmojies().get("fuck"));
         } else if(data.matches("погода.*")){
@@ -74,13 +80,55 @@ public class MessageReplier {
             bot.sendMessage(addressee.getId(),response.equals("")?"Извини, я тебя не понял.":response);
         }
     }
+    public void parseGame(String message, UserXtrCounters addressee){
+        String data=message.toLowerCase();
+        if (data.equals("хватит")) {
+            bot.endGame(addressee.getId());
+            bot.sendMessage(addressee.getId(),"Спасибо за игру!");
+        } else if(data.equals("заново")){
+            bot.startNewGame(addressee.getId());
+            bot.sendMessage(addressee.getId(),"Число загадано и игра началась!");
+        } else if(data.matches("&gt;\\d*")){
+            try {
+                boolean isCorrect=bot.getGuessGame(addressee.getId())
+                        .checkStatement('>',Integer.valueOf(data.substring(4)));
+                bot.sendMessage(addressee.getId(),isCorrect?"Да":"Нет");
+            } catch (NumberFormatException e) {
+                bot.sendMessage(addressee.getId(),"Некорректный ввод. Ввод должен быть" +
+                        " в формате \"<операция><число>\" или \"<число>\"");
+            }
+        } else if(data.matches("&lt;\\d*")){
+            try {
+                boolean isCorrect=bot.getGuessGame(addressee.getId())
+                        .checkStatement('<',Integer.valueOf(data.substring(4)));
+                bot.sendMessage(addressee.getId(),isCorrect?"Да":"Нет");
+            } catch (NumberFormatException e) {
+                bot.sendMessage(addressee.getId(),"Некорректный ввод. Ввод должен быть" +
+                        " в формате \"<операция><число>\" или \"<число>\"");
+            }
+        } else{
+            try {
+                boolean isFemale=addressee.getSex()!=null?addressee.getSex().getValue()==1:false;
+                boolean isCorrect=bot.getGuessGame(addressee.getId())
+                        .checkNumber(Integer.valueOf(data));
+                bot.sendMessage(addressee.getId(),isCorrect?"Ура! Ты "+
+                        (isFemale?"угадала":"угадал")+" за "
+                        +bot.getGuessGame(addressee.getId()).getCountOfTryings()+" попыток!" +
+                        " Спасибо за игру.":"Нет");
+                if (isCorrect) bot.endGame(addressee.getId());
+            } catch (NumberFormatException e) {
+                bot.sendMessage(addressee.getId(),"Некорректный ввод. Ввод должен быть" +
+                        " в формате \"<операция><число>\" или \"<число>\"");
+            }
+        }
+    }
     public void parseAdmin(String message, UserXtrCounters addressee){
         if(message.toCharArray()[0]!='/') return;
         String data=message.toLowerCase().substring(1);
         if(data.matches("greeting")){
             String heart=bot.getEmojies().get("heart");
             bot.sendMessage(addressee.getId(),"Привет, я временно заменяю хозяина этой страницы.\n" +
-                    "И не зови меня \"Бот\". Зови меня Юджин"+bot.getEmojies().get("coolEmoji")+"\n" +
+                    "И не зови меня бот. Зови меня Юджин"+bot.getEmojies().get("coolEmoji")+"\n" +
                     "Вот что я пока могу:\n" +
                     "1.\"Юджин, лайки на стене\": пришлю суммарное количество лайков " +
                     "под последними 100 фото со стены" +heart+"\n"+
@@ -92,8 +140,11 @@ public class MessageReplier {
                     "5.Прогноз погоды. Синтаксис запроса: \"Погода <город (в именительном падеже)> <код страны>\"."+
                     "Пример: \"Погода Москва ру\" или \"Погода Moscow ru\""+
                     bot.getEmojies().get("thermometer")+"\n" +
-                    "6.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
-                    "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными\n"+
+                    "6.\"Юджин, поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
+                    " будет угадать, пользуясь тремя командами: \">(число)\" больше, \"<(число)\" меньше" +
+                    ", \"(число)\".\n"+
+                    "7.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.matches("likesonwall")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
