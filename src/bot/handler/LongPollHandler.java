@@ -81,9 +81,13 @@ public class LongPollHandler extends Thread {
             for (int i = 0; i <array.length() ; i++) {
                 JSONArray event=array.getJSONArray(i);
                 if(event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
-                        !bot.isIgnored(event.getInt(3))){
+                        !bot.isIgnored(event.getInt(3))&&!bot.isPlaying(event.getInt(3))){
                   UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                   replier.parse(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
+                }else if(event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
+                        !bot.isIgnored(event.getInt(3))&&bot.isPlaying(event.getInt(3))){
+                    UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
+                    replier.parseGame(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
                 } else if(event.getInt(0)==4&&((event.getInt(2)&2)==2)&&event.getInt(3)<2000000000 ){
                     UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                     replier.parseAdmin(new String(event.getString(5).getBytes(),"UTF-8"),addressee);

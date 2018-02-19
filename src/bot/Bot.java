@@ -5,10 +5,7 @@ import ai.api.AIDataService;
 import bot.console.ConsoleHandler;
 import bot.handler.LongPollHandler;
 import bot.handler.MessageReplier;
-import bot.tasks.BitcoinRate;
-import bot.tasks.LikesCounter;
-import bot.tasks.MessageSender;
-import bot.tasks.WeatherForecast;
+import bot.tasks.*;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -17,6 +14,7 @@ import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.UserAuthResponse;
 import com.vk.api.sdk.objects.messages.LongpollParams;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
+import com.vk.api.sdk.queries.users.UserField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,18 +24,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
+import java.util.*;
 
 
 public class Bot {
     private static String CODE;
-    private static final int CLIENT_ID =6358381;
-    private static final String CLIENT_SECRET="client-secret",AI_CLIENT="ai-client",
+    private static int CLIENT_ID;
+    private static String CLIENT_SECRET,AI_CLIENT,
         REDIRECTED_URI="http://vk.com/blank.html";
-    public static final String APP_WEATHER_ID="544cde73017001c30cab9b8b7d18a416";
+    public static String APP_WEATHER_ID;
     private UserActor user;
     private VkApiClient vk;
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
@@ -50,9 +45,12 @@ public class Bot {
     private BitcoinRate bitcoinRate;
     private WeatherForecast forecast;
     private HashSet<Integer> ignored;
+    private LinkedHashMap<Integer,GuessNumber> guessGame;
 
     public Bot() {
         ignored=new HashSet<>();
+        guessGame=new LinkedHashMap<>();
+        initConfig();
         initBot();
         initLongPollServer();
         initAi();
@@ -63,6 +61,18 @@ public class Bot {
 
     public static void main(String[] args) {
         new Bot();
+    }
+    private void initConfig(){
+        try {
+            Properties properties=new Properties();
+            properties.load(Bot.class.getClassLoader().getResourceAsStream("config.properties"));
+            CLIENT_ID=Integer.valueOf((String) properties.get("client-id"));
+            CLIENT_SECRET=(String) properties.get("client-secret");
+            AI_CLIENT=(String)properties.get("ai-client");
+            APP_WEATHER_ID=(String)properties.get("app-weather-id");
+        } catch (IOException e) {
+            logger.error("Initialize error (can`t load properties)");
+        }
     }
     private void initEmojies(){
         emojies=new HashMap<>();
@@ -156,6 +166,7 @@ public class Bot {
     public UserXtrCounters getAddressee(String id) throws ClientException, ApiException {
         return  vk.users().get(user)
                 .userIds(id)
+                .fields(UserField.SEX)
                 .execute()
                 .get(0);
     }
@@ -176,4 +187,17 @@ public class Bot {
     public AIDataService getDataService() {
         return dataService;
     }
+    public GuessNumber getGuessGame(int id){
+        return guessGame.get(id);
+    }
+    public boolean isPlaying(int id){
+        return guessGame.containsKey(id);
+    }
+    public void startNewGame(int id){
+        guessGame.put(id,new GuessNumber());
+    }
+    public void endGame(int id){
+        guessGame.remove(id);
+    }
+
 }
