@@ -30,13 +30,15 @@ public class MessageReplier {
                     "3.\"Юджин, всего лайков\": пришлю суммарное количество лайков " +
                     "под последними 100 записями" +heart+"\n"+
                     "4.\"Юджин, курс биткоина\": курс биткоина в долларах" +bot.getEmojies().get("dollar")+"\n" +
-                    "5.Прогноз погоды. Синтаксис запроса: \"Погода <город (в именительном падеже)> <код страны>\"."+
-                    "Пример: \"Погода Москва ру\" или \"Погода Moscow ru\""+
+                    "5.Прогноз погоды. Синтаксис запроса: \"Погода: <город (в именительном падеже)>, <код страны>\"."+
+                    "Пример: \"Погода: Москва, ру\" или \"Погода: Moscow, ru\""+
                     bot.getEmojies().get("thermometer")+"\n" +
                     "6.\"Юджин, поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
                     " будет угадать, пользуясь тремя командами: \">(число)\" больше, \"<(число)\" меньше" +
                     ", \"(число)\".\n"+
-                    "7.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "7. Покажу время пути в метро. Синтаксис запроса: \"Метро: <город>, <начальная станция>, " +
+                    "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
+                    "8.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.matches("юджин,? ?лайки на стене.*|1.*")){
@@ -60,7 +62,7 @@ public class MessageReplier {
         }else if(data.matches("юджин,? ?поиграем.*|6.*")){
             bot.startNewGame(addressee.getId());
             bot.sendMessage(addressee.getId(),"Число загадано и игра началась!");
-        }else if (data.matches("юджин,? ?пошли меня.*|7.*")){
+        }else if (data.matches("юджин,? ?пошли меня.*|8.*")){
             bot.sendMessage(addressee.getId(),"Я, конечно, культурный бот, но раз ты просишь...\n" +
                     addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"+bot.getEmojies().get("fuck"));
         } else if(data.matches("погода.*")){
@@ -70,12 +72,21 @@ public class MessageReplier {
                     +bot.getEmojies().get("clWithSnow")+bot.getEmojies().get("clWithRain")
                     +bot.getEmojies().get("clWithSun")+bot.getEmojies().get("sunWithCl")
                     +bot.getEmojies().get("sunWithClWithR");
-            String[] input=data.split(" ");
-            String result=input.length==3?bot.receiveWeatherForecast(input[1],input[2]):"";
+            String[] mas=data.split(": ?");
+            String[] input=mas.length==2?mas[1].split(", ?"):new String[]{};
+            String result=input.length==2?bot.receiveWeatherForecast(input[0],input[1]):"";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод.\nВвод должен быть" +
-                    " в формате: \"Погода <город (в именительном падеже)> <код страны>\"":emojiLine+
+                    " в формате: \"Погода: <город (в именительном падеже)>, <код страны>\"":emojiLine+
                     "\n"+"\n"+result+emojiLine);
-        } else{
+        } else if (data.matches("метро.*")){
+            String[] mas=data.split(": ?");
+            String[] parameters=mas.length==2?mas[1].split(", ?"):new String[]{};
+            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0],parameters[1],parameters[2]):
+                    "";
+            bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод. Ввод должен быть в" +
+                    " формате: \"Метро: <город>, <начальная станция>, <конечная станция>\"":result+bot.getEmojies()
+                    .get("watch"));
+        }else{
             String response=aiAnswer(message);
             bot.sendMessage(addressee.getId(),response.equals("")?"Извини, я тебя не понял.":response);
         }
@@ -137,13 +148,15 @@ public class MessageReplier {
                     "3.\"Юджин, всего лайков\": пришлю суммарное количество лайков " +
                     "под последними 100 записями" +heart+"\n"+
                     "4.\"Юджин, курс биткоина\": курс биткоина в долларах" +bot.getEmojies().get("dollar")+"\n" +
-                    "5.Прогноз погоды. Синтаксис запроса: \"Погода <город (в именительном падеже)> <код страны>\"."+
-                    "Пример: \"Погода Москва ру\" или \"Погода Moscow ru\""+
+                    "5.Прогноз погоды. Синтаксис запроса: \"Погода: <город (в именительном падеже)>, <код страны>\"."+
+                    "Пример: \"Погода: Москва, ру\" или \"Погода: Moscow, ru\""+
                     bot.getEmojies().get("thermometer")+"\n" +
                     "6.\"Юджин, поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
                     " будет угадать, пользуясь тремя командами: \">(число)\" больше, \"<(число)\" меньше" +
                     ", \"(число)\".\n"+
-                    "7.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "7. Покажу время пути в метро. Синтаксис запроса: \"Метро: <город>, <начальная станция>, " +
+                    "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
+                    "8.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.matches("likesonwall")){
@@ -174,12 +187,21 @@ public class MessageReplier {
                     +bot.getEmojies().get("clWithSnow")+bot.getEmojies().get("clWithRain")
                     +bot.getEmojies().get("clWithSun")+bot.getEmojies().get("sunWithCl")
                     +bot.getEmojies().get("sunWithClWithR");
-            String[] input=data.split(" ");
-            String result=input.length==3?bot.receiveWeatherForecast(input[1],input[2]):"";
+            String[] mas=data.split(": ?");
+            String[] input=mas.length==2?mas[1].split(", ?"):new String[]{};
+            String result=input.length==2?bot.receiveWeatherForecast(input[0],input[1]):"";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод.\nВвод должен быть" +
-                    " в формате: \"Погода <город (в именительном падеже)> <код страны>\"":emojiLine+
+                    " в формате: \"Погода: <город (в именительном падеже)>, <код страны>\"":emojiLine+
                     "\n"+"\n"+result+emojiLine);
-        } else if(data.matches("ai.*")){
+        }else if (data.matches("subway.*")){
+            String[] mas=data.split(": ?");
+            String[] parameters=mas.length==2?mas[1].split(", ?"):new String[]{};
+            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0],parameters[1],parameters[2]):
+                    "";
+            bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод. Ввод должен быть в" +
+                    " формате: \"Метро: <город>, <начальная станция>, <конечная станция>\"":result+bot.getEmojies()
+                    .get("watch"));
+        }else if(data.matches("ai.*")){
             String[] input=data.split(": ");
             String response=input.length==2?aiAnswer(input[1]):"Not correct command.";
             bot.sendMessage(addressee.getId(),response.equals("")?"Извини, я тебя не понял.":response);
@@ -190,7 +212,8 @@ public class MessageReplier {
         } else if (data.matches("list")){
             bot.sendMessage(addressee.getId(),"=============List=============\n"+
                     "/greeting\n/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +
-                    "/forecast <city> <country code>\n/ai: <query>\n/ignore\n/unignore");
+                    "/forecast: <city>, <country code>\n/ai: <query>\n/ignore\n/unignore\n" +
+                    "/subway: <city>, <origin>, <destination>");
         }
     }
     private String aiAnswer(String input){

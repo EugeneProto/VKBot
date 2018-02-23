@@ -22,7 +22,7 @@ public class ConsoleHandler {
             String line;
             String[] input;
             while (!(line=reader.readLine()).equals("exit")){
-                input=line.split(" ");
+                input=line.split("&");
                 switch (input[0]){
                     case "inter":
                         bot.interruptLongPoll();

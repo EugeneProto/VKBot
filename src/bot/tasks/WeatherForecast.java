@@ -26,9 +26,14 @@ public class WeatherForecast {
     public String receiveWeatherForecast(String city,String countryCode){
         String result="";
         try {
+            String data="";
+            for(String s:city.split(" ")){
+                data+=s+"+";
+            }
+            data=data.substring(0,data.length()-1);
             HttpClient client=HttpClientBuilder.create().build();
             HttpGet request= new HttpGet("http://api.openweathermap.org/data/2.5/forecast?" +
-                    "q="+city+","+countryCode+"&lang=ru&units=metric&appid="+ Bot.APP_WEATHER_ID);
+                    "q="+data+","+countryCode+"&lang=ru&units=metric&appid="+ Bot.APP_WEATHER_ID);
             request.addHeader("User-Agent",USER_AGENT);
             HttpResponse response=client.execute(request);
             BufferedReader reader=new BufferedReader(new InputStreamReader(response.getEntity().getContent()));

@@ -6,6 +6,15 @@ import bot.console.ConsoleHandler;
 import bot.handler.LongPollHandler;
 import bot.handler.MessageReplier;
 import bot.tasks.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.maps.DistanceMatrixApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
+import com.google.maps.model.DistanceMatrix;
+import com.google.maps.model.GeocodingResult;
+import com.google.maps.model.TransitMode;
+import com.google.maps.model.TravelMode;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -30,7 +39,7 @@ import java.util.*;
 public class Bot {
     private static String CODE;
     private static int CLIENT_ID;
-    private static String CLIENT_SECRET,AI_CLIENT,
+    private static String CLIENT_SECRET,AI_CLIENT,DISTANCE_MATRIX,
         REDIRECTED_URI="http://vk.com/blank.html";
     public static String APP_WEATHER_ID;
     private UserActor user;
@@ -38,14 +47,17 @@ public class Bot {
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
     private BufferedReader reader;
     private Map<String,String> emojies;
-    private MessageSender sender;
-    private LikesCounter counter;
     private AIDataService dataService;
     private LongPollHandler handler;
+
+    private MessageSender sender;
+    private LikesCounter counter;
     private BitcoinRate bitcoinRate;
     private WeatherForecast forecast;
-    private HashSet<Integer> ignored;
+    private DistanceCounter distanceCounter;
     private LinkedHashMap<Integer,GuessNumber> guessGame;
+
+    private HashSet<Integer> ignored;
 
     public Bot() {
         ignored=new HashSet<>();
@@ -70,6 +82,7 @@ public class Bot {
             CLIENT_SECRET=(String) properties.get("client-secret");
             AI_CLIENT=(String)properties.get("ai-client");
             APP_WEATHER_ID=(String)properties.get("app-weather-id");
+            DISTANCE_MATRIX=(String)properties.get("distance-matrix");
         } catch (IOException e) {
             logger.error("Initialize error (can`t load properties)");
         }
@@ -94,12 +107,17 @@ public class Bot {
         emojies.put("sunWithCl","&#127780;");
         emojies.put("sunWithClWithR","&#127782;");
         emojies.put("lightning","&#127785;");
+        emojies.put("subway","&#9410;");
+        emojies.put("watch","&#8986;");
     }
     private void initTasks(){
         sender=new MessageSender(user,vk);
         counter=new LikesCounter(user,vk);
         bitcoinRate =new BitcoinRate();
         forecast=new WeatherForecast();
+        distanceCounter=new DistanceCounter(new GeoApiContext.Builder()
+                .apiKey(DISTANCE_MATRIX)
+                .build());
     }
     private void initAi(){
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
@@ -149,6 +167,9 @@ public class Bot {
     }
     public String receiveWeatherForecast(String city,String countryCode){
         return forecast.receiveWeatherForecast(city, countryCode);
+    }
+    public String calculateTimeInSubway(String city,String origin,String destination){
+        return distanceCounter.calculateTimeInSubway(city, origin, destination);
     }
     public void interruptLongPoll(){
         handler.setShouldReact(false);
