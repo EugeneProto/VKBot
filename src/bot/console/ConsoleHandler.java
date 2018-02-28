@@ -24,7 +24,7 @@ public class ConsoleHandler {
             while (!(line=reader.readLine()).equals("exit")){
                 input=line.split("&");
                 switch (input[0]){
-                    case "inter":
+                    case "stop":
                         bot.interruptLongPoll();
                         break;
                     case "start":

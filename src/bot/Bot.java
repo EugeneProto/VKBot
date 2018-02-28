@@ -146,7 +146,7 @@ public class Bot {
         }
     }
     private void initLongPollServer(){
-        handler=new LongPollHandler(this,new MessageReplier(this));
+        handler=new LongPollHandler(this,user,new MessageReplier(this));
         handler.start();
     }
     private void initConsoleHandler(){

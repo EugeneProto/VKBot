@@ -133,10 +133,10 @@ public class MessageReplier {
             }
         }
     }
-    public void parseAdmin(String message, UserXtrCounters addressee){
+    public void parseUser(String message, UserXtrCounters addressee){
         if(message.toCharArray()[0]!='/') return;
         String data=message.toLowerCase().substring(1);
-        if(data.matches("greeting")){
+        if(data.equals("greeting")){
             String heart=bot.getEmojies().get("heart");
             bot.sendMessage(addressee.getId(),"Привет, я временно заменяю хозяина этой страницы.\n" +
                     "И не зови меня бот. Зови меня Юджин"+bot.getEmojies().get("coolEmoji")+"\n" +
@@ -159,25 +159,25 @@ public class MessageReplier {
                     "8.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
-        } else if (data.matches("likesonwall")){
+        } else if (data.equals("likesonwall")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
                     "у тебя "+bot.calculateCountOfLikes(addressee,"wall")+bot.getEmojies().get("heart")+" лайков под " +
                     "фотографиями на стене.");
-        } else if (data.matches("likesonprofile")){
+        } else if (data.equals("likesonprofile")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
                     "у тебя "+bot.calculateCountOfLikes(addressee,"profile")+bot.getEmojies().get("heart")+" лайков " +
                     "под фотографиями в профиле.");
-        } else if (data.matches("totallikes")){
+        } else if (data.equals("totallikes")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
                     "у тебя "+bot.calculateContOfLikesOnPosts(addressee)+bot.getEmojies().get("heart")+" лайков " +
                     "под записями на стене.");
-        } else if(data.matches("btrate")){
+        } else if(data.equals("btrate")){
             String[] btrate=bot.bitcoinRate();
             String dollar=bot.getEmojies().get("dollar");
             bot.sendMessage(addressee.getId(),"Курс: "+btrate[0]+dollar+"\n"+
                     "Покупка: "+btrate[1]+dollar+"\n"+
                     "Продажа: "+btrate[2]+dollar);
-        }else if (data.matches("fuckoff")){
+        }else if (data.equals("fuckoff")){
             bot.sendMessage(addressee.getId(),addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"
                     +bot.getEmojies().get("fuck"));
         } else if(data.matches("forecast.*")){
@@ -205,15 +205,77 @@ public class MessageReplier {
             String[] input=data.split(": ");
             String response=input.length==2?aiAnswer(input[1]):"Not correct command.";
             bot.sendMessage(addressee.getId(),response.equals("")?"Извини, я тебя не понял.":response);
-        }else if (data.matches("ignore")){
+        }else if (data.equals("ignore")){
             bot.ignore(addressee.getId());
-        } else if (data.matches("unignore")){
+        } else if (data.equals("unignore")){
             bot.unignore(addressee.getId());
-        } else if (data.matches("list")){
+        } else if (data.equals("list")){
             bot.sendMessage(addressee.getId(),"=============List=============\n"+
                     "/greeting\n/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +
                     "/forecast: <city>, <country code>\n/ai: <query>\n/ignore\n/unignore\n" +
                     "/subway: <city>, <origin>, <destination>");
+        }
+    }
+    public void parseAdmin(String message, UserXtrCounters addressee){
+        if(message.toCharArray()[0]!='/') return;
+        String data=message.toLowerCase().substring(1);
+        if (data.equals("likesonwall")){
+            bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(addressee,"wall")+bot.getEmojies().get("heart")+" лайков под " +
+                    "фотографиями на стене.");
+        } else if (data.equals("likesonprofile")){
+            bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(addressee,"profile")+bot.getEmojies().get("heart")+" лайков " +
+                    "под фотографиями в профиле.");
+        } else if (data.equals("totallikes")){
+            bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
+                    "у тебя "+bot.calculateContOfLikesOnPosts(addressee)+bot.getEmojies().get("heart")+" лайков " +
+                    "под записями на стене.");
+        } else if(data.equals("btrate")){
+            String[] btrate=bot.bitcoinRate();
+            String dollar=bot.getEmojies().get("dollar");
+            bot.sendMessage(addressee.getId(),"Курс: "+btrate[0]+dollar+"\n"+
+                    "Покупка: "+btrate[1]+dollar+"\n"+
+                    "Продажа: "+btrate[2]+dollar);
+        }else if (data.equals("fuckoff")){
+            bot.sendMessage(addressee.getId(),addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"
+                    +bot.getEmojies().get("fuck"));
+        } else if(data.matches("forecast.*")){
+            String emojiLine=bot.getEmojies().get("thermometer")+bot.getEmojies().get("sun")
+                    +bot.getEmojies().get("clWithLight")+bot.getEmojies().get("lightning")
+                    +bot.getEmojies().get("snowflake")+bot.getEmojies().get("cloud")
+                    +bot.getEmojies().get("clWithSnow")+bot.getEmojies().get("clWithRain")
+                    +bot.getEmojies().get("clWithSun")+bot.getEmojies().get("sunWithCl")
+                    +bot.getEmojies().get("sunWithClWithR");
+            String[] mas=data.split(": ?");
+            String[] input=mas.length==2?mas[1].split(", ?"):new String[]{};
+            String result=input.length==2?bot.receiveWeatherForecast(input[0],input[1]):"";
+            bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод.\nВвод должен быть" +
+                    " в формате: \"Погода: <город (в именительном падеже)>, <код страны>\"":emojiLine+
+                    "\n"+"\n"+result+emojiLine);
+        }else if (data.matches("subway.*")){
+            String[] mas=data.split(": ?");
+            String[] parameters=mas.length==2?mas[1].split(", ?"):new String[]{};
+            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0],parameters[1],parameters[2]):
+                    "";
+            bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод. Ввод должен быть в" +
+                    " формате: \"Метро: <город>, <начальная станция>, <конечная станция>\"":result+bot.getEmojies()
+                    .get("watch"));
+        }else if(data.matches("ai.*")){
+            String[] input=data.split(": ");
+            String response=input.length==2?aiAnswer(input[1]):"Not correct command.";
+            bot.sendMessage(addressee.getId(),response.equals("")?"Извини, я тебя не понял.":response);
+        }else if(data.equals("stop")){
+            bot.interruptLongPoll();
+            bot.sendMessage(addressee.getId(),"VkBot has been stopped.");
+        } else if(data.equals("start")){
+            bot.startLongPoll();
+            bot.sendMessage(addressee.getId(),"VkBot has been continued.");
+        } else if (data.equals("list")){
+            bot.sendMessage(addressee.getId(),"=============List=============\n"+
+                    "/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +
+                    "/forecast: <city>, <country code>\n/ai: <query>\n" +
+                    "/subway: <city>, <origin>, <destination>\n/stop\n/start");
         }
     }
     private String aiAnswer(String input){

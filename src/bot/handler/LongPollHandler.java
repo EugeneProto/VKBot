@@ -2,6 +2,7 @@ package bot.handler;
 
 
 import bot.Bot;
+import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.LongpollParams;
@@ -26,12 +27,14 @@ public class LongPollHandler extends Thread {
     private Logger logger;
     private MessageReplier replier;
     private Bot bot;
+    private UserActor user;
     private boolean shouldReact;
 
-    public LongPollHandler(Bot bot,MessageReplier replier){
+    public LongPollHandler(Bot bot,UserActor user,MessageReplier replier ){
         this.logger=Bot.logger;
         this.replier =replier;
         this.bot=bot;
+        this.user=user;
         shouldReact=true;
         setDaemon(true);
     }
@@ -44,7 +47,6 @@ public class LongPollHandler extends Thread {
             HttpGet request;
             HttpResponse response;
             while (this.isAlive()){
-                if (shouldReact) {
                     request = new HttpGet("https://"+params.getServer()+"?act=a_check&" +
                             "key="+params.getKey()+"&ts="+ts+"&wait=25&mode=2&version=2");
                     request.addHeader("User-Agent", USER_AGENT);
@@ -59,7 +61,6 @@ public class LongPollHandler extends Thread {
                     JSONObject object=new JSONObject(result.toString());
                     ts=getTs(object);
                     handleResponse(object);
-                }
             }
 
         } catch (ApiException e) {
@@ -80,15 +81,21 @@ public class LongPollHandler extends Thread {
             JSONArray array=object.getJSONArray("updates");
             for (int i = 0; i <array.length() ; i++) {
                 JSONArray event=array.getJSONArray(i);
-                if(event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
-                        !bot.isIgnored(event.getInt(3))&&!bot.isPlaying(event.getInt(3))){
+                if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
+                        !bot.isIgnored(event.getInt(3))&&!bot.isPlaying(event.getInt(3))&&
+                        event.getInt(3)!=user.getId()){
                   UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                   replier.parse(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
-                }else if(event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
-                        !bot.isIgnored(event.getInt(3))&&bot.isPlaying(event.getInt(3))){
+                }else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
+                        !bot.isIgnored(event.getInt(3))&&bot.isPlaying(event.getInt(3))&&
+                        event.getInt(3)!=user.getId()){
                     UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                     replier.parseGame(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
-                } else if(event.getInt(0)==4&&((event.getInt(2)&2)==2)&&event.getInt(3)<2000000000 ){
+                } else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)==2)&&event.getInt(3)<2000000000&&
+                        event.getInt(3)!=user.getId()){
+                    UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
+                    replier.parseUser(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
+                } else if(event.getInt(0)==4&&event.getInt(3)==user.getId()){
                     UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                     replier.parseAdmin(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
                 }
