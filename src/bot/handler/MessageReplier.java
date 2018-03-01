@@ -271,6 +271,9 @@ public class MessageReplier {
         } else if(data.equals("start")){
             bot.startLongPoll();
             bot.sendMessage(addressee.getId(),"VkBot has been continued.");
+        } else if(data.equals("exit")){
+            bot.sendMessage(addressee.getId(),"VkBot has been exited. Bye-bye!");
+            bot.exit(0);
         } else if (data.equals("list")){
             bot.sendMessage(addressee.getId(),"=============List=============\n"+
                     "/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +

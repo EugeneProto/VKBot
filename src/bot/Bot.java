@@ -6,21 +6,12 @@ import bot.console.ConsoleHandler;
 import bot.handler.LongPollHandler;
 import bot.handler.MessageReplier;
 import bot.tasks.*;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.model.DistanceMatrix;
-import com.google.maps.model.GeocodingResult;
-import com.google.maps.model.TransitMode;
-import com.google.maps.model.TravelMode;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
-import com.vk.api.sdk.objects.UserAuthResponse;
 import com.vk.api.sdk.objects.messages.LongpollParams;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import com.vk.api.sdk.queries.users.UserField;
@@ -28,19 +19,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.util.*;
 
 
 public class Bot {
-    private static String CODE;
-    private static int CLIENT_ID;
-    private static String CLIENT_SECRET,AI_CLIENT,DISTANCE_MATRIX,
-        REDIRECTED_URI="http://vk.com/blank.html";
+    private static String AI_CLIENT,DISTANCE_MATRIX,ACCESS_TOKEN;
+    private static int USER_ID_MAIN;
     public static String APP_WEATHER_ID;
     private UserActor user;
     private VkApiClient vk;
@@ -78,11 +65,11 @@ public class Bot {
         try {
             Properties properties=new Properties();
             properties.load(Bot.class.getClassLoader().getResourceAsStream("config.properties"));
-            CLIENT_ID=Integer.valueOf((String) properties.get("client-id"));
-            CLIENT_SECRET=(String) properties.get("client-secret");
             AI_CLIENT=(String)properties.get("ai-client");
             APP_WEATHER_ID=(String)properties.get("app-weather-id");
             DISTANCE_MATRIX=(String)properties.get("distance-matrix");
+            ACCESS_TOKEN=(String)properties.get("access-token");
+            USER_ID_MAIN=Integer.valueOf((String)properties.get("user-id-main"));
         } catch (IOException e) {
             logger.error("Initialize error (can`t load properties)");
         }
@@ -125,25 +112,10 @@ public class Bot {
     private void initBot(){
         vk=new VkApiClient(new HttpTransportClient());
         reader=new BufferedReader(new InputStreamReader(System.in));
-        try {
-            Desktop.getDesktop().browse(URI.create("https://oauth.vk.com/authorize?client_id="+ CLIENT_ID +"&" +
-                    "display=page&" +
-                    "redirect_uri="+REDIRECTED_URI+"&scope=friends,messages&response_type=code&v=5.11"));
-            CODE =reader.readLine();
-            UserAuthResponse response=vk.oauth()
-                    .userAuthorizationCodeFlow(CLIENT_ID,CLIENT_SECRET,REDIRECTED_URI, CODE)
-                    .execute();
-            user =new UserActor(response.getUserId(),response.getAccessToken());
+            user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
             System.out.println("============VKBot version 1.0 has been started============\n" +
                     "                Print 'exit' to exit" + "\n==========================================================");
 
-        } catch (ApiException e) {
-            logger.error("Api Exception on start");
-        } catch (ClientException e) {
-            logger.error("Client Exception on start");
-        } catch (IOException e) {
-            logger.error("IO Exception on start");
-        }
     }
     private void initLongPollServer(){
         handler=new LongPollHandler(this,user,new MessageReplier(this));
@@ -219,6 +191,10 @@ public class Bot {
     }
     public void endGame(int id){
         guessGame.remove(id);
+    }
+    public void exit(int status){
+        System.out.println("VkBot has been exited. Bye-bye!");
+        System.exit(status);
     }
 
 }

@@ -40,7 +40,7 @@ public class ConsoleHandler {
 
                 }
             }
-            System.exit(0);
+            bot.exit(0);
         } catch (IOException e) {
             logger.error("IO Exception in ConsoleHandler "+e.getStackTrace());
         }
