@@ -36,7 +36,6 @@ public class LongPollHandler extends Thread {
         this.bot=bot;
         this.user=user;
         shouldReact=true;
-        setDaemon(true);
     }
     @Override
     public void run() {

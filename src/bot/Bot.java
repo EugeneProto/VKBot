@@ -2,7 +2,6 @@ package bot;
 
 import ai.api.AIConfiguration;
 import ai.api.AIDataService;
-import bot.console.ConsoleHandler;
 import bot.handler.LongPollHandler;
 import bot.handler.MessageReplier;
 import bot.tasks.*;
@@ -19,9 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 
 
@@ -32,7 +29,6 @@ public class Bot {
     private UserActor user;
     private VkApiClient vk;
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
-    private BufferedReader reader;
     private Map<String,String> emojies;
     private AIDataService dataService;
     private LongPollHandler handler;
@@ -55,7 +51,6 @@ public class Bot {
         initAi();
         initEmojies();
         initTasks();
-        initConsoleHandler();
     }
 
     public static void main(String[] args) {
@@ -111,18 +106,30 @@ public class Bot {
     }
     private void initBot(){
         vk=new VkApiClient(new HttpTransportClient());
-        reader=new BufferedReader(new InputStreamReader(System.in));
             user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
-            System.out.println("============VKBot version 1.0 has been started============\n" +
-                    "                Print 'exit' to exit" + "\n==========================================================");
+            System.out.println("\n╔╗╔╦╗╔══╗╔══╗╔══╦════╗\n" +
+                    "║║║║║║╔═╝║╔╗║║╔╗╠═╗╔═╝\n" +
+                    "║║║║╚╝║──║╚╝╚╣║║║─║║\n" +
+                    "║╚╝║╔╗║──║╔═╗║║║║─║║\n" +
+                    "╚╗╔╣║║╚═╗║╚═╝║╚╝║─║║\n" +
+                    "─╚╝╚╝╚══╝╚═══╩══╝─╚╝\n" +
+                    "╔╗╔╦══╦══╗\n" +
+                    "║║║║╔╗║╔═╝\n" +
+                    "║╚╝║╚╝║╚═╗\n" +
+                    "║╔╗║╔╗╠═╗║\n" +
+                    "║║║║║║╠═╝║\n" +
+                    "╚╝╚╩╝╚╩══╝\n" +
+                    "╔══╦════╦══╦═══╦════╦═══╦══╗\n" +
+                    "║╔═╩═╗╔═╣╔╗║╔═╗╠═╗╔═╣╔══╣╔╗╚╗\n" +
+                    "║╚═╗─║║─║╚╝║╚═╝║─║║─║╚══╣║╚╗║\n" +
+                    "╚═╗║─║║─║╔╗║╔╗╔╝─║║─║╔══╣║─║║\n" +
+                    "╔═╝║─║║─║║║║║║║──║║─║╚══╣╚═╝║\n" +
+                    "╚══╝─╚╝─╚╝╚╩╝╚╝──╚╝─╚═══╩═══╝\n");
 
     }
     private void initLongPollServer(){
         handler=new LongPollHandler(this,user,new MessageReplier(this));
         handler.start();
-    }
-    private void initConsoleHandler(){
-        new ConsoleHandler(this,reader).monitor();
     }
 
     public synchronized void sendMessage(int id, String text){
@@ -193,7 +200,12 @@ public class Bot {
         guessGame.remove(id);
     }
     public void exit(int status){
-        System.out.println("VkBot has been exited. Bye-bye!");
+        System.out.println("\n╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╗\n" +
+                "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╝\n" +
+                "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╗\n" +
+                "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╝\n" +
+                "║╚═╝║╔╝║╚══╗──║╚═╝║╔╝║╚══╗\n" +
+                "╚═══╝╚═╩═══╝──╚═══╝╚═╩═══╝\n");
         System.exit(status);
     }
 
