@@ -13,7 +13,6 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.LongpollParams;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
-import com.vk.api.sdk.queries.users.UserField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +25,12 @@ public class Bot {
     private static String AI_CLIENT,DISTANCE_MATRIX,ACCESS_TOKEN;
     private static int USER_ID_MAIN;
     public static String APP_WEATHER_ID;
-    private UserActor user;
-    private VkApiClient vk;
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
     private Map<String,String> emojies;
     private AIDataService dataService;
     private LongPollHandler handler;
 
-    private MessageSender sender;
+    private MainApiInteracter interacter;
     private LikesCounter counter;
     private BitcoinRate bitcoinRate;
     private WeatherForecast forecast;
@@ -45,18 +42,14 @@ public class Bot {
     public Bot() {
         ignored=new HashSet<>();
         guessGame=new LinkedHashMap<>();
-        initConfig();
+        loadConfig();
         initBot();
-        initLongPollServer();
-        initAi();
-        initEmojies();
-        initTasks();
     }
 
     public static void main(String[] args) {
         new Bot();
     }
-    private void initConfig(){
+    private void loadConfig(){
         try {
             Properties properties=new Properties();
             properties.load(Bot.class.getClassLoader().getResourceAsStream("config.properties"));
@@ -92,8 +85,8 @@ public class Bot {
         emojies.put("subway","&#9410;");
         emojies.put("watch","&#8986;");
     }
-    private void initTasks(){
-        sender=new MessageSender(user,vk);
+    private void initTasks(VkApiClient vk,UserActor user){
+        interacter =new MainApiInteracter(user,vk);
         counter=new LikesCounter(user,vk);
         bitcoinRate =new BitcoinRate();
         forecast=new WeatherForecast();
@@ -105,35 +98,29 @@ public class Bot {
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
     }
     private void initBot(){
-        vk=new VkApiClient(new HttpTransportClient());
-            user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
-            System.out.println("\n╔╗╔╦╗╔══╗╔══╗╔══╦════╗\n" +
-                    "║║║║║║╔═╝║╔╗║║╔╗╠═╗╔═╝\n" +
-                    "║║║║╚╝║──║╚╝╚╣║║║─║║\n" +
-                    "║╚╝║╔╗║──║╔═╗║║║║─║║\n" +
-                    "╚╗╔╣║║╚═╗║╚═╝║╚╝║─║║\n" +
-                    "─╚╝╚╝╚══╝╚═══╩══╝─╚╝\n" +
-                    "╔╗╔╦══╦══╗\n" +
-                    "║║║║╔╗║╔═╝\n" +
-                    "║╚╝║╚╝║╚═╗\n" +
-                    "║╔╗║╔╗╠═╗║\n" +
-                    "║║║║║║╠═╝║\n" +
-                    "╚╝╚╩╝╚╩══╝\n" +
-                    "╔══╦════╦══╦═══╦════╦═══╦══╗\n" +
-                    "║╔═╩═╗╔═╣╔╗║╔═╗╠═╗╔═╣╔══╣╔╗╚╗\n" +
-                    "║╚═╗─║║─║╚╝║╚═╝║─║║─║╚══╣║╚╗║\n" +
-                    "╚═╗║─║║─║╔╗║╔╗╔╝─║║─║╔══╣║─║║\n" +
-                    "╔═╝║─║║─║║║║║║║──║║─║╚══╣╚═╝║\n" +
-                    "╚══╝─╚╝─╚╝╚╩╝╚╝──╚╝─╚═══╩═══╝\n");
+      VkApiClient vk=new VkApiClient(new HttpTransportClient());
+      UserActor user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
+      initTasks(vk,user);
+      initAi();
+      initEmojies();
+      initLongPollServer(user);
 
+      interacter.setStatus("VkBot is now working (there is no human user)");
+      interacter.setLine(true);
+      System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
+                "║║║║╔══╣║─║║─║╔╗║║\n" +
+                "║╚╝║╚══╣║─║║─║║║║║\n" +
+                "║╔╗║╔══╣║─║║─║║║╠╝\n" +
+                "║║║║╚══╣╚═╣╚═╣╚╝╠╗\n" +
+                "╚╝╚╩═══╩══╩══╩══╩╝");
     }
-    private void initLongPollServer(){
+    private void initLongPollServer(UserActor user){
         handler=new LongPollHandler(this,user,new MessageReplier(this));
         handler.start();
     }
 
     public synchronized void sendMessage(int id, String text){
-       sender.sendMessage(id, text);
+       interacter.sendMessage(id, text);
     }
     public int calculateCountOfLikes(UserXtrCounters target,String albumId){
         return counter.calculateCountOfLikes(target, albumId);
@@ -158,17 +145,11 @@ public class Bot {
         handler.setShouldReact(true);
         System.out.println("Long Poll started");
     }
-    public LongpollParams getLongpollParams() throws ClientException, ApiException {
-        return vk.messages()
-                .getLongPollServer(user)
-                .execute();
+    public LongpollParams getLongpollParams(){
+        return interacter.getLongpollParams();
     }
     public UserXtrCounters getAddressee(String id) throws ClientException, ApiException {
-        return  vk.users().get(user)
-                .userIds(id)
-                .fields(UserField.SEX)
-                .execute()
-                .get(0);
+        return  interacter.getAddressee(id);
     }
 
     public void ignore(int id){
@@ -200,12 +181,14 @@ public class Bot {
         guessGame.remove(id);
     }
     public void exit(int status){
-        System.out.println("\n╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╗\n" +
-                "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╝\n" +
-                "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╗\n" +
-                "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╝\n" +
-                "║╚═╝║╔╝║╚══╗──║╚═╝║╔╝║╚══╗\n" +
-                "╚═══╝╚═╩═══╝──╚═══╝╚═╩═══╝\n");
+        interacter.setStatus("");
+        interacter.setLine(false);
+        System.out.println("╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
+                "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╣║\n" +
+                "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╣║\n" +
+                "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╩╝\n" +
+                "║╚═╝║╔╝║╚══╗──║╚═╝║╔╝║╚══╦╗\n" +
+                "╚═══╝╚═╩═══╝──╚═══╝╚═╩═══╩╝\n");
         System.exit(status);
     }
 

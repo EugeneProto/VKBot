@@ -62,10 +62,6 @@ public class LongPollHandler extends Thread {
                     handleResponse(object);
             }
 
-        } catch (ApiException e) {
-        logger.error("Api Exception in LongPollHandler");
-        } catch (ClientException e) {
-        logger.error("Client Exception in LongPollHandler");
         } catch (ClientProtocolException e) {
         logger.error("Client Protocol Exception in LongPollHandler");
         } catch (IOException e) {
