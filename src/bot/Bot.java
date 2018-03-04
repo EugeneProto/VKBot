@@ -104,9 +104,9 @@ public class Bot {
       initAi();
       initEmojies();
       initLongPollServer(user);
-
-      interacter.setStatus("VkBot is now working (there is no human user)");
-      interacter.setLine(true);
+      interacter.setStatus("VkBot is working now (there is no human user).");
+      interacter.setOnline(true);
+      Runtime.getRuntime().addShutdownHook(new Thread(()->onShutdown()));
       System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
                 "║║║║╔══╣║─║║─║╔╗║║\n" +
                 "║╚╝║╚══╣║─║║─║║║║║\n" +
@@ -181,15 +181,18 @@ public class Bot {
         guessGame.remove(id);
     }
     public void exit(int status){
+        System.exit(status);
+    }
+    private void onShutdown(){
+        interacter.sendMessageToOwner("VkBot has been exited on ["+new Date().toString()+"] Bye-bye!");
         interacter.setStatus("");
-        interacter.setLine(false);
+        interacter.setOnline(false);
         System.out.println("╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
                 "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╣║\n" +
                 "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╣║\n" +
                 "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╩╝\n" +
                 "║╚═╝║╔╝║╚══╗──║╚═╝║╔╝║╚══╦╗\n" +
                 "╚═══╝╚═╩═══╝──╚═══╝╚═╩═══╩╝\n");
-        System.exit(status);
     }
 
 }

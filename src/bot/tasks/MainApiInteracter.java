@@ -33,6 +33,9 @@ public class MainApiInteracter {
             logger.error("Client Exception when sending message");
         }
     }
+    public void sendMessageToOwner(String text){
+        sendMessage(user.getId(),text);
+    }
     public LongpollParams getLongpollParams(){
         LongpollParams params=new LongpollParams();
         try {
@@ -75,7 +78,7 @@ public class MainApiInteracter {
             logger.error("Client Exception when setting status.");
         }
     }
-    public void setLine(boolean isOnline){
+    public void setOnline(boolean isOnline){
         try {
             if (isOnline)vk.account()
                     .setOnline(user)

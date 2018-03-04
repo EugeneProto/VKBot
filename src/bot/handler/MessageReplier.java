@@ -272,13 +272,12 @@ public class MessageReplier {
             bot.startLongPoll();
             bot.sendMessage(addressee.getId(),"VkBot has been continued.");
         } else if(data.equals("exit")){
-            bot.sendMessage(addressee.getId(),"VkBot has been exited. Bye-bye!");
             bot.exit(0);
         } else if (data.equals("list")){
             bot.sendMessage(addressee.getId(),"=============List=============\n"+
                     "/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +
                     "/forecast: <city>, <country code>\n/ai: <query>\n" +
-                    "/subway: <city>, <origin>, <destination>\n/stop\n/start");
+                    "/subway: <city>, <origin>, <destination>\n/stop\n/start\n/exit (deprecated)");
         }
     }
     private String aiAnswer(String input){
