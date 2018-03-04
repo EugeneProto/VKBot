@@ -107,6 +107,7 @@ public class Bot {
       interacter.setStatus("VkBot is working now (there is no human user).");
       interacter.setOnline(true);
       Runtime.getRuntime().addShutdownHook(new Thread(()->onShutdown()));
+        interacter.sendMessageToOwner("VkBot has been started on serverTime["+new Date().toString()+"] Hello!");
       System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
                 "║║║║╔══╣║─║║─║╔╗║║\n" +
                 "║╚╝║╚══╣║─║║─║║║║║\n" +
@@ -184,7 +185,7 @@ public class Bot {
         System.exit(status);
     }
     private void onShutdown(){
-        interacter.sendMessageToOwner("VkBot has been exited on ["+new Date().toString()+"] Bye-bye!");
+        interacter.sendMessageToOwner("VkBot has been exited on serverTime["+new Date().toString()+"] Bye-bye!");
         interacter.setStatus("");
         interacter.setOnline(false);
         System.out.println("╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
