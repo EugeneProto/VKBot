@@ -39,6 +39,8 @@ public class Bot {
 
     private HashSet<Integer> ignored;
 
+    private String userStatus;
+
     public Bot() {
         ignored=new HashSet<>();
         guessGame=new LinkedHashMap<>();
@@ -104,10 +106,11 @@ public class Bot {
       initAi();
       initEmojies();
       initLongPollServer(user);
+      userStatus=interacter.getStatus();
       interacter.setStatus("VkBot is working now (there is no human user).");
       interacter.setOnline(true);
       Runtime.getRuntime().addShutdownHook(new Thread(()->onShutdown()));
-        interacter.sendMessageToOwner("VkBot has been started on serverTime["+new Date().toString()+"] Hello!");
+      interacter.sendMessageToOwner("VkBot has been started on:\nserverTime["+new Date().toString()+"]\nHello!");
       System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
                 "║║║║╔══╣║─║║─║╔╗║║\n" +
                 "║╚╝║╚══╣║─║║─║║║║║\n" +
@@ -185,8 +188,8 @@ public class Bot {
         System.exit(status);
     }
     private void onShutdown(){
-        interacter.sendMessageToOwner("VkBot has been exited on serverTime["+new Date().toString()+"] Bye-bye!");
-        interacter.setStatus("");
+        interacter.sendMessageToOwner("VkBot has been exited on:\nserverTime["+new Date().toString()+"]\nBye-bye!");
+        interacter.setStatus(userStatus);
         interacter.setOnline(false);
         System.out.println("╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
                 "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╣║\n" +

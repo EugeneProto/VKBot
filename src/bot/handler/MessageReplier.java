@@ -18,7 +18,7 @@ public class MessageReplier {
 
     public void parse(String message, UserXtrCounters addressee){
         String data=message.toLowerCase();
-        if(data.matches("привет.*")){
+        if(data.matches("здравствуй.*|привет.*")){
             String heart=bot.getEmojies().get("heart");
             bot.sendMessage(addressee.getId(),"Привет, я временно заменяю хозяина этой страницы.\n" +
                     "И не зови меня бот. Зови меня Юджин"+bot.getEmojies().get("coolEmoji")+"\n" +

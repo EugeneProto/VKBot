@@ -78,6 +78,21 @@ public class MainApiInteracter {
             logger.error("Client Exception when setting status.");
         }
     }
+    public String getStatus(){
+        String status="";
+        try {
+           status=vk.status()
+                    .get(user)
+                    .execute()
+                    .getText();
+        } catch (ApiException e) {
+            logger.error("Api Exception when setting status.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when setting status.");
+        } finally {
+            return status;
+        }
+    }
     public void setOnline(boolean isOnline){
         try {
             if (isOnline)vk.account()
