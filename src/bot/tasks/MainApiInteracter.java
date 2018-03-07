@@ -6,9 +6,23 @@ import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.LongpollParams;
+import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import com.vk.api.sdk.queries.users.UserField;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONObject;
 import org.slf4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import static org.apache.http.HttpHeaders.USER_AGENT;
 
 public class MainApiInteracter {
     private UserActor user;
@@ -106,6 +120,55 @@ public class MainApiInteracter {
             logger.error("Api Exception when setting line.");
         } catch (ClientException e) {
             logger.error("Client Exception when setting line.");
+        }
+    }
+    public void sendMessageWithPhoto(int id,String text,File photo){
+        try {
+            String attachment=uploadPhoto(photo);
+            vk.messages()
+                    .send(user)
+                    .userId(id)
+                    .message(text)
+                    .attachment(attachment)
+                    .execute();
+        } catch (ApiException e) {
+            logger.error("Api Exception when sending message");
+        } catch (ClientException e) {
+            logger.error("Client Exception when sending message");
+        }
+    }
+    private String uploadPhoto(File photo){
+        String attachment="";
+        try {
+            HttpClient client= HttpClientBuilder.create().build();
+            HttpPost uploadPhoto=new HttpPost(vk.photos()
+                    .getMessagesUploadServer(user)
+                    .execute()
+                    .getUploadUrl());
+            uploadPhoto.addHeader("User-Agent", USER_AGENT);
+            MultipartEntityBuilder builder=MultipartEntityBuilder.create();
+            builder.addBinaryBody("photo",photo);
+            uploadPhoto.setEntity(builder.build());
+            HttpResponse response=client.execute(uploadPhoto);
+            BufferedReader reader=new BufferedReader(new InputStreamReader(response
+                    .getEntity().getContent()));
+            StringBuffer buffer=new StringBuffer();
+            String line;
+            while ((line=reader.readLine())!=null) buffer.append(line);
+            JSONObject result=new JSONObject(buffer.toString());
+            Photo att=vk.photos()
+                    .saveMessagesPhoto(user,result.getString("photo"))
+                    .hash(result.getString("hash"))
+                    .server(result.getInt("server"))
+                    .execute()
+                    .get(0);
+            attachment="photo"+att.getOwnerId()+"_"+att.getId();
+        } catch (ApiException e) {
+            logger.error("Api Exception when uploading photo.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when uploading photo.");
+        } finally {
+            return attachment;
         }
     }
 }

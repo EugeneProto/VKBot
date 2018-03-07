@@ -17,6 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -35,6 +38,7 @@ public class Bot {
     private BitcoinRate bitcoinRate;
     private WeatherForecast forecast;
     private DistanceCounter distanceCounter;
+    private RandomImage randomImage;
     private LinkedHashMap<Integer,GuessNumber> guessGame;
 
     private HashSet<Integer> ignored;
@@ -86,6 +90,7 @@ public class Bot {
         emojies.put("lightning","&#127785;");
         emojies.put("subway","&#9410;");
         emojies.put("watch","&#8986;");
+        emojies.put("photo","&#127750;");
     }
     private void initTasks(VkApiClient vk,UserActor user){
         interacter =new MainApiInteracter(user,vk);
@@ -95,6 +100,7 @@ public class Bot {
         distanceCounter=new DistanceCounter(new GeoApiContext.Builder()
                 .apiKey(DISTANCE_MATRIX)
                 .build());
+        randomImage=new RandomImage();
     }
     private void initAi(){
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
@@ -123,8 +129,11 @@ public class Bot {
         handler.start();
     }
 
-    public synchronized void sendMessage(int id, String text){
+    public void sendMessage(int id, String text){
        interacter.sendMessage(id, text);
+    }
+    public void sendMessageWithPhoto(int id, String text, File photo){
+        interacter.sendMessageWithPhoto(id, text, photo);
     }
     public int calculateCountOfLikes(UserXtrCounters target,String albumId){
         return counter.calculateCountOfLikes(target, albumId);
@@ -167,6 +176,10 @@ public class Bot {
     }
     public Map<String, String> getEmojies() {
         return emojies;
+    }
+
+    public RandomImage getRandomImage() {
+        return randomImage;
     }
 
     public AIDataService getDataService() {

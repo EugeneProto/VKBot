@@ -38,7 +38,8 @@ public class MessageReplier {
                     ", \"(число)\".\n"+
                     "7. Покажу время пути в метро. Синтаксис запроса: \"Метро: <город>, <начальная станция>, " +
                     "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
-                    "8.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "8.\"Случайное фото\": пришлю случайное фото"+bot.getEmojies().get("photo")+"\n"+
+                    "9.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.matches("юджин,? ?лайки на стене.*|1.*")){
@@ -62,7 +63,9 @@ public class MessageReplier {
         }else if(data.matches("юджин,? ?поиграем.*|6.*")){
             bot.startNewGame(addressee.getId());
             bot.sendMessage(addressee.getId(),"Число загадано и игра началась!");
-        }else if (data.matches("юджин,? ?пошли меня.*|8.*")){
+        }else if(data.matches("случайное фото.*|8.*")){
+            bot.sendMessageWithPhoto(addressee.getId(),"Держи!",bot.getRandomImage().randomImage());
+        }else if (data.matches("юджин,? ?пошли меня.*|9.*")){
             bot.sendMessage(addressee.getId(),"Я, конечно, культурный бот, но раз ты просишь...\n" +
                     addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"+bot.getEmojies().get("fuck"));
         } else if(data.matches("погода.*")){
@@ -156,7 +159,8 @@ public class MessageReplier {
                     ", \"(число)\".\n"+
                     "7. Покажу время пути в метро. Синтаксис запроса: \"Метро: <город>, <начальная станция>, " +
                     "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
-                    "8.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "8.\"Случайное фото\": пришлю случайное фото"+bot.getEmojies().get("photo")+"\n"+
+                    "9.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.equals("likesonwall")){
@@ -177,6 +181,8 @@ public class MessageReplier {
             bot.sendMessage(addressee.getId(),"Курс: "+btrate[0]+dollar+"\n"+
                     "Покупка: "+btrate[1]+dollar+"\n"+
                     "Продажа: "+btrate[2]+dollar);
+        }else if(data.equals("randomphoto")){
+            bot.sendMessageWithPhoto(addressee.getId(),"Держи!",bot.getRandomImage().randomImage());
         }else if (data.equals("fuckoff")){
             bot.sendMessage(addressee.getId(),addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"
                     +bot.getEmojies().get("fuck"));
@@ -213,7 +219,7 @@ public class MessageReplier {
             bot.sendMessage(addressee.getId(),"=============List=============\n"+
                     "/greeting\n/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +
                     "/forecast: <city>, <country code>\n/ai: <query>\n/ignore\n/unignore\n" +
-                    "/subway: <city>, <origin>, <destination>");
+                    "/subway: <city>, <origin>, <destination>\n/randomPhoto");
         }
     }
     public void parseAdmin(String message, UserXtrCounters addressee){

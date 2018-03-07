@@ -71,7 +71,7 @@ public class LongPollHandler extends Thread {
     private int getTs(JSONObject object){
         return object.getInt("ts");
     }
-    private void handleResponse(JSONObject object) throws UnsupportedEncodingException {
+    private void handleResponse(JSONObject object){
         try {
             JSONArray array=object.getJSONArray("updates");
             for (int i = 0; i <array.length() ; i++) {
@@ -96,9 +96,11 @@ public class LongPollHandler extends Thread {
                 }
             }
         } catch (ApiException e) {
-            logger.error("Api Exception in LongPollHandler when handle event");
+            logger.error("Api Exception in LongPollHandler when handle event.");
         } catch (ClientException e) {
-            logger.error("Client Exception in LongPollHandler when handle event");
+            logger.error("Client Exception in LongPollHandler when handle event.");
+        } catch (UnsupportedEncodingException e) {
+            logger.error("UnsupportedEncodingException in LongPollHandler when handle event.");
         }
     }
 
