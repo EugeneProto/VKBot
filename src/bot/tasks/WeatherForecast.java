@@ -18,9 +18,11 @@ import static org.apache.http.HttpHeaders.USER_AGENT;
 
 public class WeatherForecast {
     private Logger logger;
+    private String id;
 
-    public WeatherForecast() {
+    public WeatherForecast(String id) {
         this.logger = Bot.logger;
+        this.id=id;
     }
 
     public String receiveWeatherForecast(String city,String countryCode){
@@ -29,7 +31,7 @@ public class WeatherForecast {
             city=city.replaceAll(" ","+");
             HttpClient client=HttpClientBuilder.create().build();
             HttpGet request= new HttpGet("http://api.openweathermap.org/data/2.5/forecast?" +
-                    "q="+city+","+countryCode+"&lang=ru&units=metric&appid="+ Bot.APP_WEATHER_ID);
+                    "q="+city+","+countryCode+"&lang=ru&units=metric&appid="+id);
             request.addHeader("User-Agent",USER_AGENT);
             HttpResponse response=client.execute(request);
             BufferedReader reader=new BufferedReader(new InputStreamReader(response.getEntity().getContent()));

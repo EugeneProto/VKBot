@@ -5,6 +5,7 @@ import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import bot.Bot;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
+import javafx.util.Pair;
 import org.slf4j.Logger;
 
 public class MessageReplier {
@@ -23,49 +24,54 @@ public class MessageReplier {
             bot.sendMessage(addressee.getId(),"Привет, я временно заменяю хозяина этой страницы.\n" +
                     "И не зови меня бот. Зови меня Юджин"+bot.getEmojies().get("coolEmoji")+"\n" +
                     "Вот что я пока могу:\n" +
-                    "1.\"Юджин, лайки на стене\": пришлю суммарное количество лайков " +
+                    "1.\"Лайки на стене\": пришлю суммарное количество лайков " +
                     "под последними 100 фото со стены" +heart+"\n"+
-                    "2.\"Юджин, лайки в профиле\": пришлю суммарное количество лайков " +
+                    "2.\"Лайки в профиле\": пришлю суммарное количество лайков " +
                     "под последними 100 фото в профиле" +heart+"\n"+
-                    "3.\"Юджин, всего лайков\": пришлю суммарное количество лайков " +
+                    "3.\"Всего лайков\": пришлю суммарное количество лайков " +
                     "под последними 100 записями" +heart+"\n"+
-                    "4.\"Юджин, курс биткоина\": курс биткоина в долларах" +bot.getEmojies().get("dollar")+"\n" +
+                    "4.\"Курс биткоина\": курс биткоина в долларах" +bot.getEmojies().get("dollar")+"\n" +
                     "5.Прогноз погоды. Синтаксис запроса: \"Погода: <город (в именительном падеже)>, <код страны>\"."+
                     "Пример: \"Погода: Москва, ру\" или \"Погода: Moscow, ru\""+
                     bot.getEmojies().get("thermometer")+"\n" +
-                    "6.\"Юджин, поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
+                    "6.\"Поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
                     " будет угадать, пользуясь тремя командами: \">(число)\" больше, \"<(число)\" меньше" +
                     ", \"(число)\".\n"+
                     "7. Покажу время пути в метро. Синтаксис запроса: \"Метро: <город>, <начальная станция>, " +
                     "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
                     "8.\"Случайное фото\": пришлю случайное фото"+bot.getEmojies().get("photo")+"\n"+
-                    "9.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "9.\"Скинь мем\": скину случайный мем (из новых)"+bot.getEmojies().get("mail")+"\n"+
+                    "10.\"Пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
-        } else if (data.matches("юджин,? ?лайки на стене.*|1.*")){
+        } else if (data.matches("лайки на стене.*|1.*")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
                     "у тебя "+bot.calculateCountOfLikes(addressee,"wall")+bot.getEmojies().get("heart")+" лайков под " +
                     "фотографиями на стене.");
-        } else if (data.matches("юджин,? ?лайки в профиле.*|2.*")){
+        } else if (data.matches("лайки в профиле.*|2.*")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
                     "у тебя "+bot.calculateCountOfLikes(addressee,"profile")+bot.getEmojies().get("heart")+" лайков " +
                     "под фотографиями в профиле.");
-        } else if (data.matches("юджин,? ?всего лайков.*|3.*")){
+        } else if (data.matches("всего лайков.*|3.*")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
                     "у тебя "+bot.calculateContOfLikesOnPosts(addressee)+bot.getEmojies().get("heart")+" лайков " +
                     "под записями на стене.");
-        } else if(data.matches("юджин,? ?курс биткоина.*|4.*")){
+        } else if(data.matches("курс биткоина.*|4.*")){
             String[] btrate=bot.bitcoinRate();
             String dollar=bot.getEmojies().get("dollar");
             bot.sendMessage(addressee.getId(),"Курс: "+btrate[0]+dollar+"\n"+
                     "Покупка: "+btrate[1]+dollar+"\n"+
                     "Продажа: "+btrate[2]+dollar);
-        }else if(data.matches("юджин,? ?поиграем.*|6.*")){
+        }else if(data.matches("поиграем.*|6.*")){
             bot.startNewGame(addressee.getId());
             bot.sendMessage(addressee.getId(),"Число загадано и игра началась!");
         }else if(data.matches("случайное фото.*|8.*")){
+            bot.sendMessage(addressee.getId(),"Минутку...");
             bot.sendMessageWithPhoto(addressee.getId(),"Держи!",bot.getRandomImage().randomImage());
-        }else if (data.matches("юджин,? ?пошли меня.*|9.*")){
+        }else if(data.matches("скинь мем.*|9.*")){
+            Pair<String,String[]> meme=bot.randomMeme();
+            bot.sendMessageWithPhoto(addressee.getId(),meme.getKey(),meme.getValue());
+        }else if (data.matches("пошли меня.*|10.*")){
             bot.sendMessage(addressee.getId(),"Я, конечно, культурный бот, но раз ты просишь...\n" +
                     addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"+bot.getEmojies().get("fuck"));
         } else if(data.matches("погода.*")){
@@ -137,30 +143,31 @@ public class MessageReplier {
         }
     }
     public void parseUser(String message, UserXtrCounters addressee){
-        if(message.toCharArray()[0]!='/') return;
+        if(message.length()<=0||message.toCharArray()[0]!='/') return;
         String data=message.toLowerCase().substring(1);
         if(data.equals("greeting")){
             String heart=bot.getEmojies().get("heart");
             bot.sendMessage(addressee.getId(),"Привет, я временно заменяю хозяина этой страницы.\n" +
                     "И не зови меня бот. Зови меня Юджин"+bot.getEmojies().get("coolEmoji")+"\n" +
                     "Вот что я пока могу:\n" +
-                    "1.\"Юджин, лайки на стене\": пришлю суммарное количество лайков " +
+                    "1.\"Лайки на стене\": пришлю суммарное количество лайков " +
                     "под последними 100 фото со стены" +heart+"\n"+
-                    "2.\"Юджин, лайки в профиле\": пришлю суммарное количество лайков " +
+                    "2.\"Лайки в профиле\": пришлю суммарное количество лайков " +
                     "под последними 100 фото в профиле" +heart+"\n"+
-                    "3.\"Юджин, всего лайков\": пришлю суммарное количество лайков " +
+                    "3.\"Всего лайков\": пришлю суммарное количество лайков " +
                     "под последними 100 записями" +heart+"\n"+
-                    "4.\"Юджин, курс биткоина\": курс биткоина в долларах" +bot.getEmojies().get("dollar")+"\n" +
+                    "4.\"Курс биткоина\": курс биткоина в долларах" +bot.getEmojies().get("dollar")+"\n" +
                     "5.Прогноз погоды. Синтаксис запроса: \"Погода: <город (в именительном падеже)>, <код страны>\"."+
                     "Пример: \"Погода: Москва, ру\" или \"Погода: Moscow, ru\""+
                     bot.getEmojies().get("thermometer")+"\n" +
-                    "6.\"Юджин, поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
+                    "6.\"Поиграем\": я загадаю число от 0 до 100, а тебе нужно" +
                     " будет угадать, пользуясь тремя командами: \">(число)\" больше, \"<(число)\" меньше" +
                     ", \"(число)\".\n"+
                     "7. Покажу время пути в метро. Синтаксис запроса: \"Метро: <город>, <начальная станция>, " +
                     "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
                     "8.\"Случайное фото\": пришлю случайное фото"+bot.getEmojies().get("photo")+"\n"+
-                    "9.\"Юджин, пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "9.\"Скинь мем\": скину случайный мем (из новых)"+bot.getEmojies().get("mail")+"\n"+
+                    "10.\"Пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.equals("likesonwall")){
@@ -182,7 +189,11 @@ public class MessageReplier {
                     "Покупка: "+btrate[1]+dollar+"\n"+
                     "Продажа: "+btrate[2]+dollar);
         }else if(data.equals("randomphoto")){
+            bot.sendMessage(addressee.getId(),"Минутку...");
             bot.sendMessageWithPhoto(addressee.getId(),"Держи!",bot.getRandomImage().randomImage());
+        }else if(data.equals("randommeme")){
+            Pair<String,String[]> meme=bot.randomMeme();
+            bot.sendMessageWithPhoto(addressee.getId(),meme.getKey(),meme.getValue());
         }else if (data.equals("fuckoff")){
             bot.sendMessage(addressee.getId(),addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"
                     +bot.getEmojies().get("fuck"));
@@ -219,11 +230,11 @@ public class MessageReplier {
             bot.sendMessage(addressee.getId(),"=============List=============\n"+
                     "/greeting\n/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +
                     "/forecast: <city>, <country code>\n/ai: <query>\n/ignore\n/unignore\n" +
-                    "/subway: <city>, <origin>, <destination>\n/randomPhoto");
+                    "/subway: <city>, <origin>, <destination>\n/randomPhoto\n/randomMeme");
         }
     }
     public void parseAdmin(String message, UserXtrCounters addressee){
-        if(message.toCharArray()[0]!='/') return;
+        if(message.length()<=1||message.toCharArray()[0]!='/') return;
         String data=message.toLowerCase().substring(1);
         if (data.equals("likesonwall")){
             bot.sendMessage(addressee.getId(),""+addressee.getFirstName()+" "+addressee.getLastName()+", " +

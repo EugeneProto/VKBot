@@ -13,21 +13,21 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.LongpollParams;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
+import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
 
 public class Bot {
-    private static String AI_CLIENT,DISTANCE_MATRIX,ACCESS_TOKEN;
-    private static int USER_ID_MAIN;
-    public static String APP_WEATHER_ID;
+    private String AI_CLIENT,DISTANCE_MATRIX,ACCESS_TOKEN,APP_WEATHER_ID;
+    private int USER_ID_MAIN;
+    private int[] MEME_RESOURCES;
+
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
     private Map<String,String> emojies;
     private AIDataService dataService;
@@ -39,6 +39,7 @@ public class Bot {
     private WeatherForecast forecast;
     private DistanceCounter distanceCounter;
     private RandomImage randomImage;
+    private PostResender resender;
     private LinkedHashMap<Integer,GuessNumber> guessGame;
 
     private HashSet<Integer> ignored;
@@ -64,6 +65,8 @@ public class Bot {
             DISTANCE_MATRIX=(String)properties.get("distance-matrix");
             ACCESS_TOKEN=(String)properties.get("access-token");
             USER_ID_MAIN=Integer.valueOf((String)properties.get("user-id-main"));
+            MEME_RESOURCES=new int[]{Integer.valueOf((String)properties.get("meme-4ch")),
+                    Integer.valueOf((String)properties.get("meme-mdk"))};
         } catch (IOException e) {
             logger.error("Initialize error (can`t load properties)");
         }
@@ -91,16 +94,18 @@ public class Bot {
         emojies.put("subway","&#9410;");
         emojies.put("watch","&#8986;");
         emojies.put("photo","&#127750;");
+        emojies.put("mail","&#128236;");
     }
     private void initTasks(VkApiClient vk,UserActor user){
         interacter =new MainApiInteracter(user,vk);
         counter=new LikesCounter(user,vk);
         bitcoinRate =new BitcoinRate();
-        forecast=new WeatherForecast();
+        forecast=new WeatherForecast(APP_WEATHER_ID);
         distanceCounter=new DistanceCounter(new GeoApiContext.Builder()
                 .apiKey(DISTANCE_MATRIX)
                 .build());
         randomImage=new RandomImage();
+        resender=new PostResender(user,vk,MEME_RESOURCES);
     }
     private void initAi(){
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
@@ -133,6 +138,9 @@ public class Bot {
        interacter.sendMessage(id, text);
     }
     public void sendMessageWithPhoto(int id, String text, File photo){
+        interacter.sendMessageWithPhoto(id, text, photo);
+    }
+    public void sendMessageWithPhoto(int id, String text,String...photo){
         interacter.sendMessageWithPhoto(id, text, photo);
     }
     public int calculateCountOfLikes(UserXtrCounters target,String albumId){
@@ -199,6 +207,9 @@ public class Bot {
     }
     public void exit(int status){
         System.exit(status);
+    }
+    public Pair<String, String[]> randomMeme(){
+        return resender.randomMeme();
     }
     private void onShutdown(){
         interacter.sendMessageToOwner("VkBot has been exited on:\nserverTime["+new Date().toString()+"]\nBye-bye!");

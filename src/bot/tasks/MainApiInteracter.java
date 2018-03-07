@@ -123,14 +123,30 @@ public class MainApiInteracter {
         }
     }
     public void sendMessageWithPhoto(int id,String text,File photo){
+        sendMessageWithPhoto(id, text, uploadPhoto(photo));
+    }
+    public void sendMessageWithPhoto(int id,String text,String...photo){
         try {
-            String attachment=uploadPhoto(photo);
-            vk.messages()
-                    .send(user)
-                    .userId(id)
-                    .message(text)
-                    .attachment(attachment)
-                    .execute();
+            if (text!=null&&!text.equals("")&&photo!=null&&photo.length>0) {
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .message(text)
+                        .attachment(photo)
+                        .execute();
+            } else if (photo!=null&&photo.length>0){
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .attachment(photo)
+                        .execute();
+            } else {
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .message("Упс...Ошибочка вышла. Попробуй снова.")
+                        .execute();
+            }
         } catch (ApiException e) {
             logger.error("Api Exception when sending message");
         } catch (ClientException e) {
