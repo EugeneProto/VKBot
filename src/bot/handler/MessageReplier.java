@@ -4,8 +4,8 @@ import ai.api.AIServiceException;
 import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import bot.Bot;
+import bot.utils.Pair;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
-import javafx.util.Pair;
 import org.slf4j.Logger;
 
 public class MessageReplier {

@@ -1,12 +1,13 @@
 package bot.tasks;
 
 import bot.Bot;
+import bot.utils.Pair;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.wall.WallPostFull;
-import javafx.util.Pair;
+
 import org.slf4j.Logger;
 
 import java.util.ArrayList;

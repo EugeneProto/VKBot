@@ -5,6 +5,7 @@ import ai.api.AIDataService;
 import bot.handler.LongPollHandler;
 import bot.handler.MessageReplier;
 import bot.tasks.*;
+import bot.utils.Pair;
 import com.google.maps.GeoApiContext;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
@@ -13,7 +14,7 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.LongpollParams;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
-import javafx.util.Pair;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
