@@ -42,9 +42,9 @@ public class MainApiInteracter {
                     .message(text)
                     .execute();
         } catch (ApiException e) {
-            logger.error("Api Exception when sending message");
+            logger.error("Api Exception when sending message.");
         } catch (ClientException e) {
-            logger.error("Client Exception when sending message");
+            logger.error("Client Exception when sending message.");
         }
     }
     public void sendMessageToOwner(String text){
@@ -125,6 +125,34 @@ public class MainApiInteracter {
     public void sendMessageWithPhoto(int id,String text,File photo){
         sendMessageWithPhoto(id, text, uploadPhoto(photo));
     }
+    public void sendMessageWithVideo(int id,String text,String video){
+        try {
+            if (text!=null&&!text.equals("")&&video!=null&&!video.equals("")) {
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .message(text)
+                        .attachment(video)
+                        .execute();
+            } else if (video!=null&&!video.equals("")){
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .attachment(video)
+                        .execute();
+            } else {
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .message("Упс...Ошибочка вышла. Попробуй снова.")
+                        .execute();
+            }
+        } catch (ApiException e) {
+            logger.error("Api Exception when sending message.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when sending message.");
+        }
+    }
     public void sendMessageWithPhoto(int id,String text,String...photo){
         try {
             if (text!=null&&!text.equals("")&&photo!=null&&photo.length>0) {
@@ -148,9 +176,9 @@ public class MainApiInteracter {
                         .execute();
             }
         } catch (ApiException e) {
-            logger.error("Api Exception when sending message");
+            logger.error("Api Exception when sending message.");
         } catch (ClientException e) {
-            logger.error("Client Exception when sending message");
+            logger.error("Client Exception when sending message.");
         }
     }
     private String uploadPhoto(File photo){

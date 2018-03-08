@@ -41,7 +41,8 @@ public class MessageReplier {
                     "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
                     "8.\"Случайное фото\": пришлю случайное фото"+bot.getEmojies().get("photo")+"\n"+
                     "9.\"Скинь мем\": скину случайный мем (из новых)"+bot.getEmojies().get("mail")+"\n"+
-                    "10.\"Пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "10.\"Скинь видео\": скину случайное видео"+bot.getEmojies().get("camera")+"\n"+
+                    "11.\"Пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.matches("лайки на стене.*|1.*")){
@@ -71,7 +72,9 @@ public class MessageReplier {
         }else if(data.matches("скинь мем.*|9.*")){
             Pair<String,String[]> meme=bot.randomMeme();
             bot.sendMessageWithPhoto(addressee.getId(),meme.getKey(),meme.getValue());
-        }else if (data.matches("пошли меня.*|10.*")){
+        }else if(data.matches("скинь видео.*|10.*")){
+            bot.sendMessageWithVideo(addressee.getId(),"",bot.randomVideo());
+        }else if (data.matches("пошли меня.*|11.*")){
             bot.sendMessage(addressee.getId(),"Я, конечно, культурный бот, но раз ты просишь...\n" +
                     addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"+bot.getEmojies().get("fuck"));
         } else if(data.matches("погода.*")){
@@ -167,7 +170,8 @@ public class MessageReplier {
                     "<конечная станция>\""+bot.getEmojies().get("subway")+"\n"+
                     "8.\"Случайное фото\": пришлю случайное фото"+bot.getEmojies().get("photo")+"\n"+
                     "9.\"Скинь мем\": скину случайный мем (из новых)"+bot.getEmojies().get("mail")+"\n"+
-                    "10.\"Пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
+                    "10.\"Скинь видео\": скину случайное видео"+bot.getEmojies().get("camera")+"\n"+
+                    "11.\"Пошли меня\": могу послать"+bot.getEmojies().get("fuck")+"\n"+
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь:)");
         } else if (data.equals("likesonwall")){
@@ -194,6 +198,8 @@ public class MessageReplier {
         }else if(data.equals("randommeme")){
             Pair<String,String[]> meme=bot.randomMeme();
             bot.sendMessageWithPhoto(addressee.getId(),meme.getKey(),meme.getValue());
+        }else if(data.equals("randomvideo")){
+            bot.sendMessageWithVideo(addressee.getId(),"",bot.randomVideo());
         }else if (data.equals("fuckoff")){
             bot.sendMessage(addressee.getId(),addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"
                     +bot.getEmojies().get("fuck"));
@@ -230,7 +236,8 @@ public class MessageReplier {
             bot.sendMessage(addressee.getId(),"=============List=============\n"+
                     "/greeting\n/likesOnWall\n/likesOnProfile\n/totalLikes\n/btRate\n/fuckOff\n" +
                     "/forecast: <city>, <country code>\n/ai: <query>\n/ignore\n/unignore\n" +
-                    "/subway: <city>, <origin>, <destination>\n/randomPhoto\n/randomMeme");
+                    "/subway: <city>, <origin>, <destination>\n/randomPhoto\n/randomMeme\n" +
+                    "/randomVideo");
         }
     }
     public void parseAdmin(String message, UserXtrCounters addressee){

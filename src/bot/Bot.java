@@ -40,7 +40,7 @@ public class Bot {
     private WeatherForecast forecast;
     private DistanceCounter distanceCounter;
     private RandomImage randomImage;
-    private PostResender resender;
+    private RandomVkItem randomItem;
     private LinkedHashMap<Integer,GuessNumber> guessGame;
 
     private HashSet<Integer> ignored;
@@ -67,7 +67,8 @@ public class Bot {
             ACCESS_TOKEN=(String)properties.get("access-token");
             USER_ID_MAIN=Integer.valueOf((String)properties.get("user-id-main"));
             MEME_RESOURCES=new int[]{Integer.valueOf((String)properties.get("meme-4ch")),
-                    Integer.valueOf((String)properties.get("meme-mdk"))};
+                    Integer.valueOf((String)properties.get("meme-mdk")),
+                    Integer.valueOf((String)properties.get("meme-9gag"))};
         } catch (IOException e) {
             logger.error("Initialize error (can`t load properties)");
         }
@@ -96,6 +97,7 @@ public class Bot {
         emojies.put("watch","&#8986;");
         emojies.put("photo","&#127750;");
         emojies.put("mail","&#128236;");
+        emojies.put("camera","&#128249;");
     }
     private void initTasks(VkApiClient vk,UserActor user){
         interacter =new MainApiInteracter(user,vk);
@@ -106,7 +108,7 @@ public class Bot {
                 .apiKey(DISTANCE_MATRIX)
                 .build());
         randomImage=new RandomImage();
-        resender=new PostResender(user,vk,MEME_RESOURCES);
+        randomItem =new RandomVkItem(user,vk,MEME_RESOURCES);
     }
     private void initAi(){
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
@@ -143,6 +145,9 @@ public class Bot {
     }
     public void sendMessageWithPhoto(int id, String text,String...photo){
         interacter.sendMessageWithPhoto(id, text, photo);
+    }
+    public void sendMessageWithVideo(int id,String text,String video){
+        interacter.sendMessageWithVideo(id, text, video);
     }
     public int calculateCountOfLikes(UserXtrCounters target,String albumId){
         return counter.calculateCountOfLikes(target, albumId);
@@ -210,7 +215,10 @@ public class Bot {
         System.exit(status);
     }
     public Pair<String, String[]> randomMeme(){
-        return resender.randomMeme();
+        return randomItem.randomMeme();
+    }
+    public String randomVideo(){
+        return randomItem.randomVideo();
     }
     private void onShutdown(){
         interacter.sendMessageToOwner("VkBot has been exited on:\nserverTime["+new Date().toString()+"]\nBye-bye!");
