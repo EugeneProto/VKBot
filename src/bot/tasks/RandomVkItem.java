@@ -7,8 +7,8 @@ import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.video.Video;
-import com.vk.api.sdk.objects.wall.WallPostFull;
 
+import com.vk.api.sdk.objects.wall.WallpostFull;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -28,10 +28,10 @@ public class RandomVkItem {
     }
 
     public Pair<String,String[]> randomMeme(){
-        Pair<String,String[]> result=new Pair<>("",new String[]{});
+        Pair<String,String[]> result=new Pair<>("",new String[0]);
         try {
             Random random=new Random();
-            WallPostFull post=vk.wall()
+            WallpostFull post=vk.wall()
                     .get(user)
                     .ownerId(resources[random.nextInt(resources.length)])
                     .count(1)
@@ -42,7 +42,7 @@ public class RandomVkItem {
             ArrayList<String> fields=new ArrayList<>();
             post.getAttachments().forEach(e->fields.add("photo"+e.getPhoto().getOwnerId()+"_"+
             e.getPhoto().getId()));
-            result=fields.size()>0?new Pair<>(post.getText(),fields.toArray(new String[]{})):randomMeme();
+            result=fields.size()>0?new Pair<>(post.getText(),fields.toArray(new String[0])):randomMeme();
         } catch (ApiException e) {
             logger.error("Api Exception when getting meme.");
         } catch (ClientException e) {

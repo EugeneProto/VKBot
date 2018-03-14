@@ -24,12 +24,12 @@ public class RandomImage {
         try{
             photo=File.createTempFile("tmp",".jpg");
             photo.deleteOnExit();
+            photo.createNewFile();
             HttpClient client= HttpClientBuilder.create().build();
             HttpGet request=new HttpGet("https://picsum.photos/800/800/?random");
             request.addHeader("User-Agent", USER_AGENT);
             HttpResponse response=client.execute(request);
             InputStream is=response.getEntity().getContent();
-            photo.createNewFile();
             FileOutputStream os=new FileOutputStream(photo);
             IOUtils.copy(is,os);
         }catch (IOException e){

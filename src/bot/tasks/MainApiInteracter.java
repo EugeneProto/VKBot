@@ -36,11 +36,20 @@ public class MainApiInteracter {
     }
     public void sendMessage(int id, String text){
         try {
-            vk.messages()
-                    .send(user)
-                    .userId(id)
-                    .message(text)
-                    .execute();
+
+            try {
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .message(text)
+                        .execute();
+            } catch (ApiException e) {
+                vk.messages()
+                        .send(user)
+                        .userId(id)
+                        .message("Упс...Ошибочка вышла. Попробуй другое.")
+                        .execute();
+            }
         } catch (ApiException e) {
             logger.error("Api Exception when sending message.");
         } catch (ClientException e) {
@@ -57,9 +66,9 @@ public class MainApiInteracter {
                     .getLongPollServer(user)
                     .execute();
         } catch (ApiException e) {
-            logger.error("LongPoll error");
+            logger.error("Api Exception when getting longpoll params");
         } catch (ClientException e) {
-            logger.error("LongPoll error");
+            logger.error("Client Exception when getting longpoll params");
         } finally {
             return params;
         }
@@ -73,9 +82,9 @@ public class MainApiInteracter {
                     .execute()
                     .get(0);
         } catch (ApiException e) {
-            e.printStackTrace();
+            logger.error("Api Exception when getting addressee");
         } catch (ClientException e) {
-            e.printStackTrace();
+            logger.error("Client Exception when getting addressee");
         } finally {
             return counters;
         }
@@ -127,26 +136,25 @@ public class MainApiInteracter {
     }
     public void sendMessageWithVideo(int id,String text,String video){
         try {
-            if (text!=null&&!text.equals("")&&video!=null&&!video.equals("")) {
+            if (text!=null&&!text.equals("")&&video!=null&&!video.equals(""))
                 vk.messages()
                         .send(user)
                         .userId(id)
                         .message(text)
                         .attachment(video)
                         .execute();
-            } else if (video!=null&&!video.equals("")){
+            else if (video!=null&&!video.equals(""))
                 vk.messages()
                         .send(user)
                         .userId(id)
                         .attachment(video)
                         .execute();
-            } else {
-                vk.messages()
+            else vk.messages()
                         .send(user)
                         .userId(id)
                         .message("Упс...Ошибочка вышла. Попробуй снова.")
                         .execute();
-            }
+
         } catch (ApiException e) {
             logger.error("Api Exception when sending message.");
         } catch (ClientException e) {
@@ -190,9 +198,9 @@ public class MainApiInteracter {
                     .execute()
                     .getUploadUrl());
             uploadPhoto.addHeader("User-Agent", USER_AGENT);
-            MultipartEntityBuilder builder=MultipartEntityBuilder.create();
-            builder.addBinaryBody("photo",photo);
-            uploadPhoto.setEntity(builder.build());
+            uploadPhoto.setEntity(MultipartEntityBuilder.create()
+                    .addBinaryBody("photo",photo)
+                    .build());
             HttpResponse response=client.execute(uploadPhoto);
             BufferedReader reader=new BufferedReader(new InputStreamReader(response
                     .getEntity().getContent()));

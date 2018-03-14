@@ -7,7 +7,8 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.photos.PhotoFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
-import com.vk.api.sdk.objects.wall.WallPostFull;
+
+import com.vk.api.sdk.objects.wall.WallpostFull;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -46,13 +47,13 @@ public class LikesCounter {
     public int calculateContOfLikesOnPosts(UserXtrCounters target){
         int likes=0;
         try {
-                List<WallPostFull> posts= vk.wall()
+                List<WallpostFull> posts= vk.wall()
                         .get(user)
                         .ownerId(target.getId())
                         .count(100)
                         .execute()
                         .getItems();
-                for (WallPostFull post:posts) likes+=post.getLikes().getCount();
+                for (WallpostFull post:posts) likes+=post.getLikes().getCount();
 
         } catch (ApiException e) {
             logger.error("Api Exception when counting likes");

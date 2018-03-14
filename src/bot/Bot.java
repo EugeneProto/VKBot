@@ -41,6 +41,7 @@ public class Bot {
     private DistanceCounter distanceCounter;
     private RandomImage randomImage;
     private RandomVkItem randomItem;
+    private TextConverter converter;
     private LinkedHashMap<Integer,GuessNumber> guessGame;
 
     private HashSet<Integer> ignored;
@@ -98,6 +99,7 @@ public class Bot {
         emojies.put("photo","&#127750;");
         emojies.put("mail","&#128236;");
         emojies.put("camera","&#128249;");
+        emojies.put("exclamation","&#10071;");
     }
     private void initTasks(VkApiClient vk,UserActor user){
         interacter =new MainApiInteracter(user,vk);
@@ -109,6 +111,7 @@ public class Bot {
                 .build());
         randomImage=new RandomImage();
         randomItem =new RandomVkItem(user,vk,MEME_RESOURCES);
+        converter=new TextConverter();
     }
     private void initAi(){
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
@@ -133,9 +136,11 @@ public class Bot {
                 "╚╝╚╩═══╩══╩══╩══╩╝");
     }
     private void initLongPollServer(UserActor user){
-        handler=new LongPollHandler(this,user,new MessageReplier(this));
+        handler=new LongPollHandler(this,user,new MessageReplier(this,emojies));
         handler.start();
     }
+
+
 
     public void sendMessage(int id, String text){
        interacter.sendMessage(id, text);
@@ -164,43 +169,17 @@ public class Bot {
     public String calculateTimeInSubway(String city,String origin,String destination){
         return distanceCounter.calculateTimeInSubway(city, origin, destination);
     }
-    public void interruptLongPoll(){
-        handler.setShouldReact(false);
-        System.out.println("Long Poll interrupted");
+    public File randomImage() {
+        return randomImage.randomImage();
     }
-    public void startLongPoll(){
-        handler.setShouldReact(true);
-        System.out.println("Long Poll started");
+    public Pair<String, String[]> randomMeme(){
+        return randomItem.randomMeme();
     }
-    public LongpollParams getLongpollParams(){
-        return interacter.getLongpollParams();
+    public String randomVideo(){
+        return randomItem.randomVideo();
     }
-    public UserXtrCounters getAddressee(String id) throws ClientException, ApiException {
-        return  interacter.getAddressee(id);
-    }
-
-    public void ignore(int id){
-        ignored.add(id);
-    }
-    public void unignore(int id){
-        ignored.remove(id);
-    }
-    public boolean isIgnored(int id){
-        return ignored.contains(id);
-    }
-    public Map<String, String> getEmojies() {
-        return emojies;
-    }
-
-    public RandomImage getRandomImage() {
-        return randomImage;
-    }
-
-    public AIDataService getDataService() {
-        return dataService;
-    }
-    public GuessNumber getGuessGame(int id){
-        return guessGame.get(id);
+    public String textToEmoji(char[] text,String background,String foreground){
+        return converter.textToEmoji(text, background, foreground);
     }
     public boolean isPlaying(int id){
         return guessGame.containsKey(id);
@@ -211,14 +190,41 @@ public class Bot {
     public void endGame(int id){
         guessGame.remove(id);
     }
+
+
+    public void interruptLongPoll(){
+        handler.setShouldReact(false);
+        System.out.println("Long Poll interrupted");
+    }
+    public void startLongPoll(){
+        handler.setShouldReact(true);
+        System.out.println("Long Poll started");
+    }
+    public void ignore(int id){
+        ignored.add(id);
+    }
+    public void unignore(int id){
+        ignored.remove(id);
+    }
+    public boolean isIgnored(int id){
+        return ignored.contains(id);
+    }
+
+
+    public LongpollParams getLongpollParams(){
+        return interacter.getLongpollParams();
+    }
+    public UserXtrCounters getAddressee(String id) throws ClientException, ApiException {
+        return  interacter.getAddressee(id);
+    }
+    public AIDataService getDataService() {
+        return dataService;
+    }
+    public GuessNumber getGuessGame(int id){
+        return guessGame.get(id);
+    }
     public void exit(int status){
         System.exit(status);
-    }
-    public Pair<String, String[]> randomMeme(){
-        return randomItem.randomMeme();
-    }
-    public String randomVideo(){
-        return randomItem.randomVideo();
     }
     private void onShutdown(){
         interacter.sendMessageToOwner("VkBot has been exited on:\nserverTime["+new Date().toString()+"]\nBye-bye!");
