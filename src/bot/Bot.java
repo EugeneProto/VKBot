@@ -181,32 +181,32 @@ public class Bot {
     public String textToEmoji(char[] text,String background,String foreground){
         return converter.textToEmoji(text, background, foreground);
     }
-    public boolean isPlaying(int id){
+    public synchronized boolean isPlaying(int id){
         return guessGame.containsKey(id);
     }
-    public void startNewGame(int id){
+    public synchronized void startNewGame(int id){
         guessGame.put(id,new GuessNumber());
     }
-    public void endGame(int id){
+    public synchronized void endGame(int id){
         guessGame.remove(id);
     }
 
 
-    public void interruptLongPoll(){
+    public synchronized void interruptLongPoll(){
         handler.setShouldReact(false);
         System.out.println("Long Poll interrupted");
     }
-    public void startLongPoll(){
+    public synchronized void startLongPoll(){
         handler.setShouldReact(true);
         System.out.println("Long Poll started");
     }
-    public void ignore(int id){
+    public synchronized void ignore(int id){
         ignored.add(id);
     }
-    public void unignore(int id){
+    public synchronized void unignore(int id){
         ignored.remove(id);
     }
-    public boolean isIgnored(int id){
+    public synchronized boolean isIgnored(int id){
         return ignored.contains(id);
     }
 
@@ -214,7 +214,7 @@ public class Bot {
     public LongpollParams getLongpollParams(){
         return interacter.getLongpollParams();
     }
-    public UserXtrCounters getAddressee(String id) throws ClientException, ApiException {
+    public UserXtrCounters getAddressee(String id){
         return  interacter.getAddressee(id);
     }
     public AIDataService getDataService() {

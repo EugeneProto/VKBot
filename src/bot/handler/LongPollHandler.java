@@ -20,6 +20,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
@@ -28,6 +31,7 @@ public class LongPollHandler extends Thread {
     private MessageReplier replier;
     private Bot bot;
     private UserActor user;
+    private ExecutorService service;
     private boolean shouldReact;
 
     public LongPollHandler(Bot bot,UserActor user,MessageReplier replier ){
@@ -35,6 +39,7 @@ public class LongPollHandler extends Thread {
         this.replier =replier;
         this.bot=bot;
         this.user=user;
+        service= Executors.newFixedThreadPool(3);
         shouldReact=true;
     }
     @Override
@@ -72,36 +77,33 @@ public class LongPollHandler extends Thread {
         return object.getInt("ts");
     }
     private void handleResponse(JSONObject object){
-        try {
             JSONArray array=object.getJSONArray("updates");
             for (int i = 0; i <array.length() ; i++) {
                 JSONArray event=array.getJSONArray(i);
                 if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
                         !bot.isIgnored(event.getInt(3))&&!bot.isPlaying(event.getInt(3))&&
                         event.getInt(3)!=user.getId()){
-                  UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                  replier.parse(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
+                    service.submit(()->{
+                        UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
+                        replier.parse(new String(event.getString(5).getBytes(), Charset.forName("UTF-8")),addressee);
+                    });
                 }else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
                         !bot.isIgnored(event.getInt(3))&&bot.isPlaying(event.getInt(3))&&
                         event.getInt(3)!=user.getId()){
-                    UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                    replier.parseGame(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
+                    service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
+                        replier.parseGame(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
                 } else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)==2)&&event.getInt(3)<2000000000&&
                         event.getInt(3)!=user.getId()){
-                    UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                    replier.parseUser(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
+                    service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
+                        replier.parseUser(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
+
                 } else if(event.getInt(0)==4&&event.getInt(3)==user.getId()){
-                    UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                    replier.parseAdmin(new String(event.getString(5).getBytes(),"UTF-8"),addressee);
+                    service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
+                        replier.parseAdmin(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
+
                 }
             }
-        } catch (ApiException e) {
-            logger.error("Api Exception in LongPollHandler when handle event.");
-        } catch (ClientException e) {
-            logger.error("Client Exception in LongPollHandler when handle event.");
-        } catch (UnsupportedEncodingException e) {
-            logger.error("UnsupportedEncodingException in LongPollHandler when handle event.");
-        }
+
     }
 
     public void setShouldReact(boolean shouldReact) {

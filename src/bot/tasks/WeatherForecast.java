@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
@@ -45,7 +46,7 @@ public class WeatherForecast {
             return result;
         }
     }
-    private String parseJson(JSONObject object) throws UnsupportedEncodingException {
+    private String parseJson(JSONObject object){
         StringBuffer result=new StringBuffer();
         JSONArray array=object.getJSONArray("list");
         for (int i = 0; i <(array.length()>16?16:array.length()); i++) {
@@ -57,8 +58,7 @@ public class WeatherForecast {
                 .append("ветер "+item.getJSONObject("wind").getDouble("speed")+" м/с")
                 .append(" ")
                 .append(new String(item.getJSONArray("weather").getJSONObject(0).
-                    getString("description").getBytes(),"UTF-8"))
-
+                    getString("description").getBytes(), Charset.forName("UTF-8")))
                 .append("\n"+"\n");
         }
         return result.toString();
