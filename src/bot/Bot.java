@@ -9,8 +9,6 @@ import bot.utils.Pair;
 import com.google.maps.GeoApiContext;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
-import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.LongpollParams;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
@@ -22,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Bot {
@@ -48,9 +47,9 @@ public class Bot {
 
     private String userStatus;
 
+    private AtomicInteger countOfInteractions;
+
     public Bot() {
-        ignored=new HashSet<>();
-        guessGame=new LinkedHashMap<>();
         loadConfig();
         initBot();
     }
@@ -117,6 +116,9 @@ public class Bot {
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
     }
     private void initBot(){
+      ignored=new HashSet<>();
+      guessGame=new LinkedHashMap<>();
+      countOfInteractions=new AtomicInteger(0);
       VkApiClient vk=new VkApiClient(new HttpTransportClient());
       UserActor user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
       initTasks(vk,user);
@@ -124,9 +126,19 @@ public class Bot {
       initEmojies();
       initLongPollServer(user);
       userStatus=interacter.getStatus();
+      Runtime.getRuntime().addShutdownHook(new Thread(()->onShutdown()));
+      Thread thread=new Thread(()->{
+          while (Thread.currentThread().isAlive()) {
+              try {
+                  Thread.sleep(1000);
+                  countOfInteractions.set(0);
+              } catch (InterruptedException ignore) {}
+          }
+      });
+      thread.setDaemon(true);
+      thread.start();
       interacter.setStatus("VkBot is working now (there is no human user).");
       interacter.setOnline(true);
-      Runtime.getRuntime().addShutdownHook(new Thread(()->onShutdown()));
       interacter.sendMessageToOwner("VkBot has been started on:\nserverTime["+new Date().toString()+"]\nHello!");
       System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
                 "║║║║╔══╣║─║║─║╔╗║║\n" +
@@ -143,21 +155,27 @@ public class Bot {
 
 
     public void sendMessage(int id, String text){
+       check();
        interacter.sendMessage(id, text);
     }
     public void sendMessageWithPhoto(int id, String text, File photo){
+        check();
         interacter.sendMessageWithPhoto(id, text, photo);
     }
     public void sendMessageWithPhoto(int id, String text,String...photo){
+        check();
         interacter.sendMessageWithPhoto(id, text, photo);
     }
     public void sendMessageWithVideo(int id,String text,String video){
+        check();
         interacter.sendMessageWithVideo(id, text, video);
     }
     public int calculateCountOfLikes(UserXtrCounters target,String albumId){
+        check();
         return counter.calculateCountOfLikes(target, albumId);
     }
     public int calculateContOfLikesOnPosts(UserXtrCounters target){
+        check();
         return counter.calculateContOfLikesOnPosts(target);
     }
     public String[] bitcoinRate(){
@@ -173,9 +191,13 @@ public class Bot {
         return randomImage.randomImage();
     }
     public Pair<String, String[]> randomMeme(){
-        return randomItem.randomMeme();
+        check();
+        Pair<String,String[]> pair=randomItem.randomMeme();
+        pair=pair.getValue().length>0?pair:randomMeme();
+        return pair;
     }
     public String randomVideo(){
+        check();
         return randomItem.randomVideo();
     }
     public String textToEmoji(char[] text,String background,String foreground){
@@ -215,7 +237,8 @@ public class Bot {
         return interacter.getLongpollParams();
     }
     public UserXtrCounters getAddressee(String id){
-        return  interacter.getAddressee(id);
+        check();
+        return interacter.getAddressee(id);
     }
     public AIDataService getDataService() {
         return dataService;
@@ -236,6 +259,14 @@ public class Bot {
                 "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╩╝\n" +
                 "║╚═╝║╔╝║╚══╗──║╚═╝║╔╝║╚══╦╗\n" +
                 "╚═══╝╚═╩═══╝──╚═══╝╚═╩═══╩╝\n");
+    }
+    private void check(){
+        while (countOfInteractions.get()>=3) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignore) {}
+        }
+        countOfInteractions.getAndIncrement();
     }
 
 }

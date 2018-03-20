@@ -42,7 +42,7 @@ public class RandomVkItem {
             ArrayList<String> fields=new ArrayList<>();
             post.getAttachments().forEach(e->fields.add("photo"+e.getPhoto().getOwnerId()+"_"+
             e.getPhoto().getId()));
-            result=fields.size()>0?new Pair<>(post.getText(),fields.toArray(new String[0])):randomMeme();
+            result=new Pair<>(post.getText(),fields.toArray(new String[0]));
         } catch (ApiException e) {
             logger.error("Api Exception when getting meme.");
         } catch (ClientException e) {
