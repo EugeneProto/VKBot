@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Bot {
-    private String AI_CLIENT,DISTANCE_MATRIX,ACCESS_TOKEN,APP_WEATHER_ID;
+    private String AI_CLIENT_KEY, GOOGLE_KEY,ACCESS_TOKEN, WEATHER_KEY;
     private int USER_ID_MAIN;
     private int[] MEME_RESOURCES;
 
@@ -61,9 +61,9 @@ public class Bot {
         try {
             Properties properties=new Properties();
             properties.load(Bot.class.getClassLoader().getResourceAsStream("config.properties"));
-            AI_CLIENT=(String)properties.get("ai-client");
-            APP_WEATHER_ID=(String)properties.get("app-weather-id");
-            DISTANCE_MATRIX=(String)properties.get("distance-matrix");
+            AI_CLIENT_KEY =(String)properties.get("ai-client-key");
+            WEATHER_KEY =(String)properties.get("weather-key");
+            GOOGLE_KEY =(String)properties.get("google-key");
             ACCESS_TOKEN=(String)properties.get("access-token");
             USER_ID_MAIN=Integer.valueOf((String)properties.get("user-id-main"));
             MEME_RESOURCES=new int[]{Integer.valueOf((String)properties.get("meme-4ch")),
@@ -104,16 +104,16 @@ public class Bot {
         interacter =new MainApiInteracter(user,vk);
         counter=new LikesCounter(user,vk);
         bitcoinRate =new BitcoinRate();
-        forecast=new WeatherForecast(APP_WEATHER_ID);
+        forecast=new WeatherForecast(WEATHER_KEY);
         distanceCounter=new DistanceCounter(new GeoApiContext.Builder()
-                .apiKey(DISTANCE_MATRIX)
+                .apiKey(GOOGLE_KEY)
                 .build());
         randomImage=new RandomImage();
         randomItem =new RandomVkItem(user,vk,MEME_RESOURCES);
         converter=new TextConverter();
     }
     private void initAi(){
-        dataService=new AIDataService(new AIConfiguration(AI_CLIENT));
+        dataService=new AIDataService(new AIConfiguration(AI_CLIENT_KEY));
     }
     private void initBot(){
       ignored=new HashSet<>();
@@ -126,17 +126,8 @@ public class Bot {
       initEmojies();
       initLongPollServer(user);
       userStatus=interacter.getStatus();
-      Runtime.getRuntime().addShutdownHook(new Thread(()->onShutdown()));
-      Thread thread=new Thread(()->{
-          while (Thread.currentThread().isAlive()) {
-              try {
-                  Thread.sleep(1000);
-                  countOfInteractions.set(0);
-              } catch (InterruptedException ignore) {}
-          }
-      });
-      thread.setDaemon(true);
-      thread.start();
+      addShutdownHook();
+      startCheckThread();
       interacter.setStatus("VkBot is working now (there is no human user).");
       interacter.setOnline(true);
       interacter.sendMessageToOwner("VkBot has been started on:\nserverTime["+new Date().toString()+"]\nHello!");
@@ -249,16 +240,33 @@ public class Bot {
     public void exit(int status){
         System.exit(status);
     }
-    private void onShutdown(){
-        interacter.sendMessageToOwner("VkBot has been exited on:\nserverTime["+new Date().toString()+"]\nBye-bye!");
-        interacter.setStatus(userStatus);
-        interacter.setOnline(false);
-        System.out.println("╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
-                "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╣║\n" +
-                "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╣║\n" +
-                "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╩╝\n" +
-                "║╚═╝║╔╝║╚══╗──║╚═╝║╔╝║╚══╦╗\n" +
-                "╚═══╝╚═╩═══╝──╚═══╝╚═╩═══╩╝\n");
+    private void addShutdownHook(){
+        Runtime.getRuntime().addShutdownHook(new Thread(()->{
+
+            interacter.sendMessageToOwner("VkBot has been exited on:\nserverTime["
+                    + new Date().toString() + "]\nBye-bye!");
+            interacter.setStatus(userStatus);
+            interacter.setOnline(false);
+            System.out.println("╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
+                    "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╣║\n" +
+                    "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╣║\n" +
+                    "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╩╝\n" +
+                    "║╚═╝║╔╝║╚══╗──║╚═╝║╔╝║╚══╦╗\n" +
+                    "╚═══╝╚═╩═══╝──╚═══╝╚═╩═══╩╝\n");
+
+        }));
+    }
+    private void startCheckThread(){
+        Thread thread=new Thread(()->{
+            while (Thread.currentThread().isAlive()) {
+                try {
+                    Thread.sleep(1000);
+                    countOfInteractions.set(0);
+                } catch (InterruptedException ignore) {}
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
     private void check(){
         while (countOfInteractions.get()>=3) {
