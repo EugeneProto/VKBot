@@ -104,15 +104,15 @@ public class MessageReplier {
                     + emojies.get("sunWithClWithR");
             String[] mas=data.split(": ?");
             String[] input=mas.length==2?mas[1].split(", ?"):new String[0];
-            String result=input.length==2?bot.receiveWeatherForecast(input[0],input[1]):"";
+            String result=input.length==2?bot.receiveWeatherForecast(input[0].trim(),input[1].trim()):"";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод.\nВвод должен быть" +
                     " в формате: \"Погода: <город (в именительном падеже)>, <код страны>\"":emojiLine+
                     "\n"+"\n"+result+emojiLine);
         } else if (data.matches("метро.*")){
             String[] mas=data.split(": ?");
             String[] parameters=mas.length==2?mas[1].split(", ?"):new String[0];
-            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0],
-                    parameters[1],parameters[2]): "";
+            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0].trim(),
+                    parameters[1].trim(),parameters[2].trim()): "";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод. Ввод должен быть в" +
                     " формате: \"Метро: <город>, <начальная станция>, <конечная станция>\"":result+ emojies
                     .get("watch"));
@@ -237,7 +237,7 @@ public class MessageReplier {
                     + emojies.get("sunWithClWithR");
             String[] mas=data.split(": ?");
             String[] input=mas.length==2?mas[1].split(", ?"):new String[0];
-            String result=input.length==2?bot.receiveWeatherForecast(input[0],input[1]):"";
+            String result=input.length==2?bot.receiveWeatherForecast(input[0].trim(),input[1].trim()):"";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод.\nВвод должен быть" +
                     " в формате: \"Погода: <город (в именительном падеже)>, <код страны>\"":emojiLine+
                     "\n"+"\n"+result+emojiLine);
@@ -251,8 +251,8 @@ public class MessageReplier {
         }else if (data.matches("subway.*")){
             String[] mas=data.split(": ?");
             String[] parameters=mas.length==2?mas[1].split(", ?"):new String[0];
-            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0],
-                    parameters[1],parameters[2]):"";
+            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0].trim(),
+                    parameters[1].trim(),parameters[2].trim()):"";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод. Ввод должен быть в" +
                     " формате: \"Метро: <город>, <начальная станция>, <конечная станция>\"":result+ emojies
                     .get("watch"));
@@ -305,15 +305,15 @@ public class MessageReplier {
                     + emojies.get("sunWithClWithR");
             String[] mas=data.split(": ?");
             String[] input=mas.length==2?mas[1].split(", ?"):new String[0];
-            String result=input.length==2?bot.receiveWeatherForecast(input[0],input[1]):"";
+            String result=input.length==2?bot.receiveWeatherForecast(input[0].trim(),input[1].trim()):"";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод.\nВвод должен быть" +
                     " в формате: \"Погода: <город (в именительном падеже)>, <код страны>\"":emojiLine+
                     "\n"+"\n"+result+emojiLine);
         }else if (data.matches("subway.*")){
             String[] mas=data.split(": ?");
             String[] parameters=mas.length==2?mas[1].split(", ?"):new String[0];
-            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0],parameters[1],parameters[2]):
-                    "";
+            String result=parameters.length==3?bot.calculateTimeInSubway(parameters[0].trim(),
+                    parameters[1].trim(),parameters[2].trim()):"";
             bot.sendMessage(addressee.getId(),result.equals("")?"Некорректный ввод. Ввод должен быть в" +
                     " формате: \"Метро: <город>, <начальная станция>, <конечная станция>\"":result+ emojies
                     .get("watch"));

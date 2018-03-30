@@ -2,9 +2,6 @@ package bot.handler;
 
 
 import bot.Bot;
-import com.vk.api.sdk.client.actors.UserActor;
-import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.LongpollParams;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import org.apache.http.HttpResponse;
@@ -19,7 +16,6 @@ import org.slf4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,15 +26,15 @@ public class LongPollHandler extends Thread {
     private Logger logger;
     private MessageReplier replier;
     private Bot bot;
-    private UserActor user;
     private ExecutorService service;
     private boolean shouldReact;
+    private Integer userId;
 
-    public LongPollHandler(Bot bot,UserActor user,MessageReplier replier ){
+    public LongPollHandler(Bot bot,int userId,MessageReplier replier){
         this.logger=Bot.logger;
-        this.replier =replier;
+        this.replier=replier;
         this.bot=bot;
-        this.user=user;
+        this.userId=userId;
         service= Executors.newFixedThreadPool(3);
         shouldReact=true;
     }
@@ -46,13 +42,15 @@ public class LongPollHandler extends Thread {
     public void run() {
         try {
             HttpClient client= HttpClientBuilder.create().build();
-            LongpollParams params=bot.getLongpollParams();
-            int ts=params.getTs();
             HttpGet request;
             HttpResponse response;
+
+            LongpollParams params=bot.getLongpollParams();
+            int ts=params.getTs();
+            String key = params.getKey(),server = params.getServer();
             while (this.isAlive()){
-                    request = new HttpGet("https://"+params.getServer()+"?act=a_check&" +
-                            "key="+params.getKey()+"&ts="+ts+"&wait=25&mode=2&version=2");
+                request = new HttpGet("https://"+ server +"?act=a_check&" +
+                            "key="+ key +"&ts="+ts+"&wait=25&mode=2&version=2");
                     request.addHeader("User-Agent", USER_AGENT);
                     response = client.execute(request);
                     BufferedReader rd = new BufferedReader(
@@ -63,41 +61,45 @@ public class LongPollHandler extends Thread {
                         result.append(line);
                     }
                     JSONObject object=new JSONObject(result.toString());
-                    ts=getTs(object);
-                    handleResponse(object);
+                if (object.has("ts")&&object.has("updates")) {
+                    ts=object.getInt("ts");
+                    handleResponse(object.getJSONArray("updates"));
+                } else {
+                    params=bot.getLongpollParams();
+                    server=params.getServer();
+                    key=params.getKey();
+                    ts=params.getTs();
+                    System.out.println("Update Long Poll.");
+                }
             }
 
         } catch (ClientProtocolException e) {
-        logger.error("Client Protocol Exception in LongPollHandler");
+        logger.error("Client Protocol Exception in LongPollHandler.");
         } catch (IOException e) {
-        logger.error("IO Exception in LongPollHandler");
+        logger.error("IO Exception in LongPollHandler.");
         }
     }
-    private int getTs(JSONObject object){
-        return object.getInt("ts");
-    }
-    private void handleResponse(JSONObject object){
-            JSONArray array=object.getJSONArray("updates");
+    private void handleResponse(JSONArray array){
             for (int i = 0; i <array.length() ; i++) {
                 JSONArray event=array.getJSONArray(i);
                 if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
                         !bot.isIgnored(event.getInt(3))&&!bot.isPlaying(event.getInt(3))&&
-                        event.getInt(3)!=user.getId()){
+                        event.getInt(3)!= userId){
                     service.submit(()->{
                         UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                         replier.parse(new String(event.getString(5).getBytes(), Charset.forName("UTF-8")),addressee);
                     });
                 }else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
                         !bot.isIgnored(event.getInt(3))&&bot.isPlaying(event.getInt(3))&&
-                        event.getInt(3)!=user.getId()){
+                        event.getInt(3)!= userId){
                     service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                         replier.parseGame(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
                 } else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)==2)&&event.getInt(3)<2000000000&&
-                        event.getInt(3)!=user.getId()){
+                        event.getInt(3)!= userId){
                     service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                         replier.parseUser(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
 
-                } else if(event.getInt(0)==4&&event.getInt(3)==user.getId()){
+                } else if(event.getInt(0)==4&&event.getInt(3)== userId){
                     service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
                         replier.parseAdmin(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
 

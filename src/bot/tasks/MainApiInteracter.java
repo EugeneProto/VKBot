@@ -36,20 +36,11 @@ public class MainApiInteracter {
     }
     public void sendMessage(int id, String text){
         try {
-
-            try {
-                vk.messages()
-                        .send(user)
-                        .userId(id)
-                        .message(text)
-                        .execute();
-            } catch (ApiException e) {
-                vk.messages()
-                        .send(user)
-                        .userId(id)
-                        .message("Упс...Ошибочка вышла. Попробуй другое.")
-                        .execute();
-            }
+            vk.messages()
+                    .send(user)
+                    .userId(id)
+                    .message(text)
+                    .execute();
         } catch (ApiException e) {
             logger.error("Api Exception when sending message.");
         } catch (ClientException e) {
@@ -59,78 +50,7 @@ public class MainApiInteracter {
     public void sendMessageToOwner(String text){
         sendMessage(user.getId(),text);
     }
-    public LongpollParams getLongpollParams(){
-        LongpollParams params=new LongpollParams();
-        try {
-            params=vk.messages()
-                    .getLongPollServer(user)
-                    .execute();
-        } catch (ApiException e) {
-            logger.error("Api Exception when getting longpoll params");
-        } catch (ClientException e) {
-            logger.error("Client Exception when getting longpoll params");
-        } finally {
-            return params;
-        }
-    }
-    public UserXtrCounters getAddressee(String id){
-        UserXtrCounters counters=new UserXtrCounters();
-        try {
-          counters=vk.users().get(user)
-                    .userIds(id)
-                    .fields(UserField.SEX)
-                    .execute()
-                    .get(0);
-        } catch (ApiException e) {
-            logger.error("Api Exception when getting addressee");
-        } catch (ClientException e) {
-            logger.error("Client Exception when getting addressee");
-        } finally {
-            return counters;
-        }
-    }
-    public void setStatus(String text){
-        try {
-            vk.status()
-                    .set(user)
-                    .text(text)
-                    .execute();
-        } catch (ApiException e) {
-            logger.error("Api Exception when setting status.");
-        } catch (ClientException e) {
-            logger.error("Client Exception when setting status.");
-        }
-    }
-    public String getStatus(){
-        String status="";
-        try {
-           status=vk.status()
-                    .get(user)
-                    .execute()
-                    .getText();
-        } catch (ApiException e) {
-            logger.error("Api Exception when setting status.");
-        } catch (ClientException e) {
-            logger.error("Client Exception when setting status.");
-        } finally {
-            return status;
-        }
-    }
-    public void setOnline(boolean isOnline){
-        try {
-            if (isOnline)vk.account()
-                    .setOnline(user)
-                    .voip(false)
-                    .execute();
-            else vk.account()
-                    .setOffline(user)
-                    .execute();
-        } catch (ApiException e) {
-            logger.error("Api Exception when setting line.");
-        } catch (ClientException e) {
-            logger.error("Client Exception when setting line.");
-        }
-    }
+
     public void sendMessageWithPhoto(int id,String text,File photo){
         sendMessageWithPhoto(id, text, uploadPhoto(photo));
     }
@@ -221,6 +141,78 @@ public class MainApiInteracter {
             logger.error("Client Exception when uploading photo.");
         } finally {
             return attachment;
+        }
+    }
+    public LongpollParams getLongpollParams(){
+        LongpollParams params=new LongpollParams();
+        try {
+            params=vk.messages()
+                    .getLongPollServer(user)
+                    .execute();
+        } catch (ApiException e) {
+            logger.error("Api Exception when getting longpoll params.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when getting longpoll params.");
+        } finally {
+            return params;
+        }
+    }
+    public UserXtrCounters getAddressee(String id){
+        UserXtrCounters counters=new UserXtrCounters();
+        try {
+            counters=vk.users().get(user)
+                    .userIds(id)
+                    .fields(UserField.SEX)
+                    .execute()
+                    .get(0);
+        } catch (ApiException e) {
+            logger.error("Api Exception when getting addressee.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when getting addressee.");
+        } finally {
+            return counters;
+        }
+    }
+    public void setStatus(String text){
+        try {
+            vk.status()
+                    .set(user)
+                    .text(text)
+                    .execute();
+        } catch (ApiException e) {
+            logger.error("Api Exception when setting status.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when setting status.");
+        }
+    }
+    public String getStatus(){
+        String status="";
+        try {
+            status=vk.status()
+                    .get(user)
+                    .execute()
+                    .getText();
+        } catch (ApiException e) {
+            logger.error("Api Exception when setting status.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when setting status.");
+        } finally {
+            return status;
+        }
+    }
+    public void setOnline(boolean isOnline){
+        try {
+            if (isOnline)vk.account()
+                    .setOnline(user)
+                    .voip(false)
+                    .execute();
+            else vk.account()
+                    .setOffline(user)
+                    .execute();
+        } catch (ApiException e) {
+            logger.error("Api Exception when setting line.");
+        } catch (ClientException e) {
+            logger.error("Client Exception when setting line.");
         }
     }
 }

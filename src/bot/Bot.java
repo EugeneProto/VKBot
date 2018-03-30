@@ -70,7 +70,7 @@ public class Bot {
                     Integer.valueOf((String)properties.get("meme-mdk")),
                     Integer.valueOf((String)properties.get("meme-9gag"))};
         } catch (IOException e) {
-            logger.error("Initialize error (can`t load properties)");
+            logger.error("Initialize error (can`t load properties).");
         }
     }
     private void initEmojies(){
@@ -124,7 +124,7 @@ public class Bot {
       initTasks(vk,user);
       initAi();
       initEmojies();
-      initLongPollServer(user);
+      initLongPollHandler(user.getId());
       userStatus=interacter.getStatus();
       addShutdownHook();
       startCheckThread();
@@ -138,8 +138,8 @@ public class Bot {
                 "║║║║╚══╣╚═╣╚═╣╚╝╠╗\n" +
                 "╚╝╚╩═══╩══╩══╩══╩╝");
     }
-    private void initLongPollServer(UserActor user){
-        handler=new LongPollHandler(this,user,new MessageReplier(this,emojies));
+    private void initLongPollHandler(int userId){
+        handler=new LongPollHandler(this,userId,new MessageReplier(this,emojies));
         handler.start();
     }
 
@@ -207,11 +207,11 @@ public class Bot {
 
     public synchronized void interruptLongPoll(){
         handler.setShouldReact(false);
-        System.out.println("Long Poll interrupted");
+        System.out.println("Long Poll interrupted.");
     }
     public synchronized void startLongPoll(){
         handler.setShouldReact(true);
-        System.out.println("Long Poll started");
+        System.out.println("Long Poll started.");
     }
     public synchronized void ignore(int id){
         ignored.add(id);

@@ -37,9 +37,9 @@ public class LikesCounter {
             for (PhotoFull photo:photos) likes +=photo.getLikes().getCount();
 
         } catch (ApiException e) {
-            logger.error("Api Exception when counting likes");
+            logger.error("Api Exception when counting likes.");
         } catch (ClientException e) {
-            logger.error("Client Exception when counting likes");
+            logger.error("Client Exception when counting likes.");
         } finally {
             return likes;
         }
@@ -56,9 +56,9 @@ public class LikesCounter {
                 for (WallpostFull post:posts) likes+=post.getLikes().getCount();
 
         } catch (ApiException e) {
-            logger.error("Api Exception when counting likes");
+            logger.error("Api Exception when counting likes.");
         } catch (ClientException e) {
-            logger.error("Client Exception when counting likes");
+            logger.error("Client Exception when counting likes.");
         } finally {
             return likes;
         }

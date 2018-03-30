@@ -27,18 +27,18 @@ public class DistanceCounter {
                     .language("ru")
                     .mode(TravelMode.TRANSIT)
                     .transitModes(TransitMode.SUBWAY)
-                    .origins(city+",станция метро "+origin)
-                    .destinations(city+",станция метро "+destination)
+                    .origins(city+", станция метро "+origin)
+                    .destinations(city+", станция метро "+destination)
                     .await();
             if (matrix.rows.length>0&&matrix.rows[0].elements.length>0) {
                 result=matrix.rows[0].elements[0].duration.humanReadable;
             }
         } catch (ApiException e) {
-            logger.error("Api Exception when calculating time");
+            logger.error("Api Exception when calculating time.");
         } catch (InterruptedException e) {
-            logger.error("Interrupted Exception when calculating time");
+            logger.error("Interrupted Exception when calculating time.");
         } catch (IOException e) {
-            logger.error("IO Exception when calculating time");
+            logger.error("IO Exception when calculating time.");
         } finally {
             return result;
         }
