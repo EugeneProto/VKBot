@@ -57,6 +57,9 @@ public class Bot {
     public static void main(String[] args) {
         new Bot();
     }
+    /**
+     * Loading configuration from file
+     **/
     private void loadConfig(){
         try {
             Properties properties=new Properties();
@@ -115,6 +118,7 @@ public class Bot {
     private void initAi(){
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT_KEY));
     }
+
     private void initBot(){
       ignored=new HashSet<>();
       guessGame=new LinkedHashMap<>();
