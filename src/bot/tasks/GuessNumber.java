@@ -20,7 +20,7 @@ public class GuessNumber {
         return number==input;
     }
 
-    public int getCountOfTryings() {
+    public int countOfTryings() {
         return countOfTryings;
     }
 }

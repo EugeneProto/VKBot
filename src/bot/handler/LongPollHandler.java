@@ -24,10 +24,31 @@ import static org.apache.http.HttpHeaders.USER_AGENT;
 
 public class LongPollHandler extends Thread {
     private Logger logger;
+
+    /**
+     * Class for parse and reply to messages.
+     * @see LongPollHandler#handleResponse(JSONArray)
+     */
     private MessageReplier replier;
     private Bot bot;
+
+    /**
+     * Pull of handlers for high loads.
+     * @see LongPollHandler#handleResponse(JSONArray)
+     */
     private ExecutorService service;
+
+    /**
+     * Should react to users messages.
+     * @see LongPollHandler#handleResponse(JSONArray)
+     * @see LongPollHandler#setShouldReact(boolean)
+     */
     private boolean shouldReact;
+
+    /**
+     * Person who have launched the app id.
+     * @see LongPollHandler#handleResponse(JSONArray)
+     */
     private Integer userId;
 
     public LongPollHandler(Bot bot,int userId,MessageReplier replier){
@@ -38,6 +59,12 @@ public class LongPollHandler extends Thread {
         service= Executors.newFixedThreadPool(3);
         shouldReact=true;
     }
+
+    /**
+     * The main logic of Long Poll.
+     * Connect to the vk server, wait for answer,
+     * parse the answer and then connect again.
+     */
     @Override
     public void run() {
         try {
@@ -79,29 +106,38 @@ public class LongPollHandler extends Thread {
         logger.error("IO Exception in LongPollHandler.");
         }
     }
+
+    /**
+     * Handle server response.
+     * @param array "updates" array from JSON
+     */
     private void handleResponse(JSONArray array){
             for (int i = 0; i <array.length() ; i++) {
-                JSONArray event=array.getJSONArray(i);
-                if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
-                        !bot.isIgnored(event.getInt(3))&&!bot.isPlaying(event.getInt(3))&&
-                        event.getInt(3)!= userId){
+                JSONArray update=array.getJSONArray(i);
+                int event = update.getInt(0),flag = update.getInt(2),
+                        id = update.getInt(3);
+                boolean isIgnored = bot.isIgnored(id), isPlaying = bot.isPlaying(id);
+                if(shouldReact&&event==4&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&!isPlaying&&id!=userId){
                     service.submit(()->{
-                        UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                        replier.parse(new String(event.getString(5).getBytes(), Charset.forName("UTF-8")),addressee);
+                        UserXtrCounters addressee=bot.getAddressee(update.get(3).toString());
+                        replier.parse(new String(update.getString(5).getBytes(), Charset.forName("UTF-8")),addressee);
                     });
-                }else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)!=2)&&event.getInt(3)<2000000000&&
-                        !bot.isIgnored(event.getInt(3))&&bot.isPlaying(event.getInt(3))&&
-                        event.getInt(3)!= userId){
-                    service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                        replier.parseGame(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
-                } else if(shouldReact&&event.getInt(0)==4&&((event.getInt(2)&2)==2)&&event.getInt(3)<2000000000&&
-                        event.getInt(3)!= userId){
-                    service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                        replier.parseUser(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
+                }else if(shouldReact&&event==4&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&isPlaying&& id!=userId){
+                    service.submit(()->{
+                        UserXtrCounters addressee=bot.getAddressee(update.get(3).toString());
+                        replier.parseGame(new String(update.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);
+                    });
+                } else if(shouldReact&&event==4&&((flag &2)==2)&&id <2000000000&&id!=userId){
+                    service.submit(()->{
+                        UserXtrCounters addressee=bot.getAddressee(update.get(3).toString());
+                        replier.parseUser(new String(update.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);
+                    });
 
-                } else if(event.getInt(0)==4&&event.getInt(3)== userId){
-                    service.submit(()->{UserXtrCounters addressee=bot.getAddressee(event.get(3).toString());
-                        replier.parseAdmin(new String(event.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);});
+                } else if(event==4&&id==userId){
+                    service.submit(()->{
+                        UserXtrCounters addressee=bot.getAddressee(update.get(3).toString());
+                        replier.parseAdmin(new String(update.getString(5).getBytes(),Charset.forName("UTF-8")),addressee);
+                    });
 
                 }
             }

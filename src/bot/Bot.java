@@ -2,6 +2,9 @@ package bot;
 
 import ai.api.AIConfiguration;
 import ai.api.AIDataService;
+import ai.api.AIServiceException;
+import ai.api.model.AIRequest;
+import ai.api.model.AIResponse;
 import bot.handler.LongPollHandler;
 import bot.handler.MessageReplier;
 import bot.tasks.*;
@@ -24,15 +27,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Bot {
+    /**
+     * Configuration fields.
+     * @see Bot#loadConfig()
+     * @see Bot#initBot()
+     */
     private String AI_CLIENT_KEY, GOOGLE_KEY,ACCESS_TOKEN, WEATHER_KEY;
     private int USER_ID_MAIN;
     private int[] MEME_RESOURCES;
 
+    /**
+     *Service fields.
+     * @see Bot#initEmojies()
+     * @see Bot#initAi()
+     * @see Bot#initLongPollHandler(int)
+     */
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
     private Map<String,String> emojies;
     private AIDataService dataService;
     private LongPollHandler handler;
 
+    /**
+     * Tasks for bot.
+     * @see Bot#initTasks(VkApiClient, UserActor)
+     */
     private MainApiInteracter interacter;
     private LikesCounter counter;
     private BitcoinRate bitcoinRate;
@@ -43,10 +61,26 @@ public class Bot {
     private TextConverter converter;
     private LinkedHashMap<Integer,GuessNumber> guessGame;
 
+    /**
+     * Set of games which different users plays.
+     * @see Bot#startNewGame(int)
+     * @see Bot#isPlaying(int)
+     * @see Bot#endGame(int)
+     */
     private HashSet<Integer> ignored;
 
+    /**
+     * User status before bot`s launch.
+     * @see Bot#initBot()
+     * @see Bot#addShutdownHook()
+     */
     private String userStatus;
 
+    /**
+     * Control count of interactions with Vk Api.
+     * @see Bot#startCheckThread()
+     * @see Bot#check()
+     */
     private AtomicInteger countOfInteractions;
 
     public Bot() {
@@ -57,9 +91,10 @@ public class Bot {
     public static void main(String[] args) {
         new Bot();
     }
+
     /**
-     * Loading configuration from file
-     **/
+     * Load configuration from file.
+     */
     private void loadConfig(){
         try {
             Properties properties=new Properties();
@@ -75,6 +110,34 @@ public class Bot {
         } catch (IOException e) {
             logger.error("Initialize error (can`t load properties).");
         }
+    }
+
+
+    /**
+     * Init methods on start of application.
+     */
+    private void initBot(){
+        ignored=new HashSet<>();
+        guessGame=new LinkedHashMap<>();
+        countOfInteractions=new AtomicInteger(0);
+        VkApiClient vk=new VkApiClient(new HttpTransportClient());
+        UserActor user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
+        initTasks(vk,user);
+        initAi();
+        initEmojies();
+        initLongPollHandler(user.getId());
+        userStatus=interacter.getStatus();
+        addShutdownHook();
+        startCheckThread();
+        interacter.setStatus("VkBot is working now (there is no human user).");
+        interacter.setOnline(true);
+        interacter.sendMessageToOwner("VkBot has been started on:\nserverTime["+new Date().toString()+"]\nHello!");
+        System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
+                "║║║║╔══╣║─║║─║╔╗║║\n" +
+                "║╚╝║╚══╣║─║║─║║║║║\n" +
+                "║╔╗║╔══╣║─║║─║║║╠╝\n" +
+                "║║║║╚══╣╚═╣╚═╣╚╝╠╗\n" +
+                "╚╝╚╩═══╩══╩══╩══╩╝");
     }
     private void initEmojies(){
         emojies=new HashMap<>();
@@ -119,36 +182,16 @@ public class Bot {
         dataService=new AIDataService(new AIConfiguration(AI_CLIENT_KEY));
     }
 
-    private void initBot(){
-      ignored=new HashSet<>();
-      guessGame=new LinkedHashMap<>();
-      countOfInteractions=new AtomicInteger(0);
-      VkApiClient vk=new VkApiClient(new HttpTransportClient());
-      UserActor user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
-      initTasks(vk,user);
-      initAi();
-      initEmojies();
-      initLongPollHandler(user.getId());
-      userStatus=interacter.getStatus();
-      addShutdownHook();
-      startCheckThread();
-      interacter.setStatus("VkBot is working now (there is no human user).");
-      interacter.setOnline(true);
-      interacter.sendMessageToOwner("VkBot has been started on:\nserverTime["+new Date().toString()+"]\nHello!");
-      System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
-                "║║║║╔══╣║─║║─║╔╗║║\n" +
-                "║╚╝║╚══╣║─║║─║║║║║\n" +
-                "║╔╗║╔══╣║─║║─║║║╠╝\n" +
-                "║║║║╚══╣╚═╣╚═╣╚╝╠╗\n" +
-                "╚╝╚╩═══╩══╩══╩══╩╝");
-    }
+
     private void initLongPollHandler(int userId){
         handler=new LongPollHandler(this,userId,new MessageReplier(this,emojies));
         handler.start();
     }
 
 
-
+    /**
+     * Message send methods.
+     */
     public void sendMessage(int id, String text){
        check();
        interacter.sendMessage(id, text);
@@ -165,6 +208,10 @@ public class Bot {
         check();
         interacter.sendMessageWithVideo(id, text, video);
     }
+
+    /**
+     * Tasks methods.
+     */
     public int calculateCountOfLikes(UserXtrCounters target,String albumId){
         check();
         return counter.calculateCountOfLikes(target, albumId);
@@ -198,6 +245,10 @@ public class Bot {
     public String textToEmoji(char[] text,String background,String foreground){
         return converter.textToEmoji(text, background, foreground);
     }
+
+    /**
+     * Game methods.
+     */
     public synchronized boolean isPlaying(int id){
         return guessGame.containsKey(id);
     }
@@ -207,8 +258,36 @@ public class Bot {
     public synchronized void endGame(int id){
         guessGame.remove(id);
     }
+    public synchronized boolean checkStatement(int id,char operation,int input){
+        return guessGame.get(id).checkStatement(operation, input);
+    }
+    public synchronized boolean checkNumber(int id,int input){
+        return guessGame.get(id).checkNumber(input);
+    }
+    public synchronized int countOfTryings(int id){
+        return guessGame.get(id).countOfTryings();
+    }
 
+    /**
+     * @param input user says
+     * @return artificial intelligence answer
+     */
+    public String aiAnswer(String input){
+        String result="";
+        try {
+            AIRequest request = new AIRequest(input);
+            AIResponse response = dataService.request(request);
+            if(response.getStatus().getCode()==200) result=response.getResult().getFulfillment().getSpeech();
+        } catch (AIServiceException e) {
+            logger.info("AI Service Exception when ai answering.");
+        } finally {
+            return result;
+        }
+    }
 
+    /**
+     * Service functions.
+     */
     public synchronized void interruptLongPoll(){
         handler.setShouldReact(false);
         System.out.println("Long Poll interrupted.");
@@ -227,23 +306,29 @@ public class Bot {
         return ignored.contains(id);
     }
 
-
+    /**
+     * Get methods.
+     */
     public LongpollParams getLongpollParams(){
+        check();
         return interacter.getLongpollParams();
     }
     public UserXtrCounters getAddressee(String id){
         check();
         return interacter.getAddressee(id);
     }
-    public AIDataService getDataService() {
-        return dataService;
-    }
-    public GuessNumber getGuessGame(int id){
-        return guessGame.get(id);
-    }
+
+    /**
+     * Shutdown program.
+     * @param status exit status
+     */
     public void exit(int status){
         System.exit(status);
     }
+
+    /**
+     * Operations on shutdown.
+     */
     private void addShutdownHook(){
         Runtime.getRuntime().addShutdownHook(new Thread(()->{
 
@@ -260,6 +345,10 @@ public class Bot {
 
         }));
     }
+
+    /**
+     * Thread for control count of interactions with Vk Api.
+     */
     private void startCheckThread(){
         Thread thread=new Thread(()->{
             while (Thread.currentThread().isAlive()) {
@@ -272,6 +361,10 @@ public class Bot {
         thread.setDaemon(true);
         thread.start();
     }
+
+    /**
+     * Check count of interactions with Vk Api.
+     */
     private void check(){
         while (countOfInteractions.get()>=3) {
             try {
