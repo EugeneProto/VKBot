@@ -4,6 +4,9 @@ package bot.tasks;
 
 import java.util.LinkedHashMap;
 
+/**
+ * Class for convert text to emojis.
+ */
 public class TextConverter {
     private LinkedHashMap<Character,String> lettersPatterns;
 
@@ -12,8 +15,15 @@ public class TextConverter {
         initPatterns();
     }
 
+    /**
+     * Change symbol to emojis.
+     * @param text text to change
+     * @param background background emoji
+     * @param foreground foreground emoji
+     * @return emojis
+     */
     public String textToEmoji(char[] text,String background,String foreground){
-        StringBuffer result=new StringBuffer("");
+        StringBuffer result=new StringBuffer();
         for(Character letter:text){
             if (lettersPatterns.containsKey(letter))
                 result.append(lettersPatterns.get(letter)
@@ -25,6 +35,10 @@ public class TextConverter {
         }
         return result.toString();
     }
+
+    /**
+     * Init symbol patterns.
+     */
     private void initPatterns(){
         //english letters
         lettersPatterns.put('a',"0000000000\n" +

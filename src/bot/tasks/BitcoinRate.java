@@ -15,12 +15,20 @@ import java.io.InputStreamReader;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
+/**
+ * Class for receiving bitcoin rate.
+ */
 public class BitcoinRate {
     private Logger logger;
 
     public BitcoinRate() {
         this.logger = Bot.logger;
     }
+
+    /**
+     * Connect to server and receive rate.
+     * @return string array which contains three value of bitcoin rate.
+     */
     public String[] bitcoinRate(){
         String[] rate={};
         try {
@@ -40,6 +48,13 @@ public class BitcoinRate {
         }
 
     }
+
+    /**
+     * Parse server response.
+     * @param json server response
+     * @return array of values
+     * @see BitcoinRate#bitcoinRate()
+     */
     private String[] parseJson(JSONObject json){
         JSONObject object=json.getJSONObject("USD");
         return new String[]{""+object.getDouble("last")+"$",

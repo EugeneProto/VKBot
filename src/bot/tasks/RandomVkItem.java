@@ -14,10 +14,17 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Random item from vk`s public.
+ */
 public class RandomVkItem {
     private UserActor user;
     private VkApiClient vk;
     private Logger logger;
+
+    /**
+     * Publics ids.
+     */
     private int[] resources;
 
     public RandomVkItem(UserActor user, VkApiClient vk, int[] resources){
@@ -27,6 +34,10 @@ public class RandomVkItem {
         this.logger= Bot.logger;
     }
 
+    /**
+     * Random meme from vk public from resources.
+     * @return text or photo identifier(s)or text with photo identifier(s)
+     */
     public Pair<String,String[]> randomMeme(){
         Pair<String,String[]> result=new Pair<>("",new String[0]);
         try {
@@ -51,6 +62,11 @@ public class RandomVkItem {
             return result;
         }
     }
+
+    /**
+     * Random video from vk public from resources.
+     * @return video identifier
+     */
     public String randomVideo(){
         String result="";
         try {

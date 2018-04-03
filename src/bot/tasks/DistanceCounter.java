@@ -11,8 +11,16 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 
+/**
+ * Class for calculating time in subway using Google APIs.
+ */
 public class DistanceCounter {
     private Logger logger;
+
+    /**
+     * Context for connecting to Google APIs.
+     * @see DistanceCounter#calculateTimeInSubway(String, String, String)
+     */
     private GeoApiContext context;
 
     public DistanceCounter(GeoApiContext context) {
@@ -20,6 +28,13 @@ public class DistanceCounter {
         this.logger= Bot.logger;
     }
 
+    /**
+     * Connect to Google APIs and calculate time.
+     * @param city city with subway
+     * @param origin origin subway station
+     * @param destination destination subway station
+     * @return
+     */
     public String calculateTimeInSubway(String city,String origin, String destination){
         String result="";
         try {

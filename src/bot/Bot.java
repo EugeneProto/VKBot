@@ -25,8 +25,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
+/**
+ * Main class of the program.
+ */
 public class Bot {
+
     /**
      * Configuration fields.
      * @see Bot#loadConfig()
@@ -37,7 +40,7 @@ public class Bot {
     private int[] MEME_RESOURCES;
 
     /**
-     *Service fields.
+     * Service fields.
      * @see Bot#initEmojies()
      * @see Bot#initAi()
      * @see Bot#initLongPollHandler(int)
@@ -62,10 +65,10 @@ public class Bot {
     private LinkedHashMap<Integer,GuessNumber> guessGame;
 
     /**
-     * Set of games which different users plays.
-     * @see Bot#startNewGame(int)
-     * @see Bot#isPlaying(int)
-     * @see Bot#endGame(int)
+     * Set of ignored users.
+     * @see Bot#ignore(int)
+     * @see Bot#unignore(int)
+     * @see Bot#isIgnored(int)
      */
     private HashSet<Integer> ignored;
 
@@ -93,7 +96,7 @@ public class Bot {
     }
 
     /**
-     * Load configuration from file.
+     * Load configurations from file.
      */
     private void loadConfig(){
         try {
@@ -269,8 +272,9 @@ public class Bot {
     }
 
     /**
+     * Chat-bot answer.
      * @param input user says
-     * @return artificial intelligence answer
+     * @return chat-bot answer
      */
     public String aiAnswer(String input){
         String result="";
@@ -313,9 +317,9 @@ public class Bot {
         check();
         return interacter.getLongpollParams();
     }
-    public UserXtrCounters getAddressee(String id){
+    public UserXtrCounters getSender(String id){
         check();
-        return interacter.getAddressee(id);
+        return interacter.getSender(id);
     }
 
     /**

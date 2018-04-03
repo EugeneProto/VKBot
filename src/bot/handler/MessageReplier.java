@@ -8,6 +8,9 @@ import com.vk.api.sdk.objects.users.UserXtrCounters;
 import java.io.File;
 import java.util.Map;
 
+/**
+ * Class for parse and reply to messages.
+ */
 public class MessageReplier {
     private Bot bot;
     private Map<String, String> emojies;
@@ -20,7 +23,7 @@ public class MessageReplier {
     /**
      * Parse and reply to message from user.
      * @param message user message
-     * @param addressee user who send message
+     * @param sender user who send message
      * Functions:
      * @see Bot#sendMessage(int, String)
      * @see Bot#sendMessageWithPhoto(int, String, File)
@@ -38,9 +41,9 @@ public class MessageReplier {
      * @see Bot#calculateTimeInSubway(String, String, String)
      * @see Bot#aiAnswer(String)
      */
-    public void parse(String message, UserXtrCounters addressee){
+    public void parse(String message, UserXtrCounters sender){
         String data=message.toLowerCase();
-        int id = addressee.getId();
+        int id = sender.getId();
         if(data.matches("здравствуй.*|привет.*")){
             String heart= emojies.get("heart");
             bot.sendMessage(id,"Привет, я временно заменяю хозяина этой страницы.\n" +
@@ -73,16 +76,16 @@ public class MessageReplier {
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь"+ emojies.get("cuteSmile"));
         } else if (data.matches("лайки на стене.*|1")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateCountOfLikes(addressee,"wall")+ emojies.get("heart")+" лайков под " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(sender,"wall")+ emojies.get("heart")+" лайков под " +
                     "фотографиями на стене.");
         } else if (data.matches("лайки в профиле.*|2")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateCountOfLikes(addressee,"profile")+ emojies.get("heart")+" лайков " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(sender,"profile")+ emojies.get("heart")+" лайков " +
                     "под фотографиями в профиле.");
         } else if (data.matches("всего лайков.*|3")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateContOfLikesOnPosts(addressee)+ emojies.get("heart")+" лайков " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateContOfLikesOnPosts(sender)+ emojies.get("heart")+" лайков " +
                     "под записями на стене.");
         } else if(data.matches("курс биткоина.*|4")){
             String[] btrate=bot.bitcoinRate();
@@ -112,7 +115,7 @@ public class MessageReplier {
                     "Попробуй что-нибудь другое.":result);
         }else if (data.matches("пошли меня.*|12")){
             bot.sendMessage(id,"Я, конечно, культурный бот, но раз ты просишь...\n" +
-                    addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"+ emojies.get("fuck"));
+                    sender.getFirstName()+" "+sender.getLastName()+", иди нахер"+ emojies.get("fuck"));
         } else if(data.matches("погода.*")){
             String emojiLine= emojies.get("thermometer")+ emojies.get("sun")
                     + emojies.get("clWithLight")+ emojies.get("lightning")
@@ -143,14 +146,14 @@ public class MessageReplier {
     /**
      * If user is playing game for parse use this method.
      * @param message user message
-     * @param addressee user who send message
+     * @param sender user who send message
      * Functions:
      * @see Bot#startNewGame(int)
      * @see Bot#endGame(int)
      */
-    public void parseGame(String message, UserXtrCounters addressee){
+    public void parseGame(String message, UserXtrCounters sender){
         String data=message.toLowerCase();
-        int id = addressee.getId();
+        int id = sender.getId();
         if (data.equals("хватит")) {
             bot.endGame(id);
             bot.sendMessage(id,"Спасибо за игру!");
@@ -175,7 +178,7 @@ public class MessageReplier {
             }
         } else{
             try {
-                boolean isFemale= addressee.getSex() != null && addressee.getSex().getValue() == 1;
+                boolean isFemale= sender.getSex() != null && sender.getSex().getValue() == 1;
                 boolean isCorrect=bot.checkNumber(id,Integer.valueOf(data));
                 bot.sendMessage(id,isCorrect?"Ура! Ты "+
                         (isFemale?"угадала":"угадал")+" за "
@@ -193,7 +196,7 @@ public class MessageReplier {
      * Parse and reply to output message in chat
      * (which send user who have launched the app).
      * @param message user message
-     * @param addressee user who send message
+     * @param sender user who send message
      * Functions:
      * @see Bot#sendMessage(int, String)
      * @see Bot#sendMessageWithPhoto(int, String, File)
@@ -211,10 +214,10 @@ public class MessageReplier {
      * @see Bot#calculateTimeInSubway(String, String, String)
      * @see Bot#aiAnswer(String)
      */
-    public void parseUser(String message, UserXtrCounters addressee){
+    public void parseUser(String message, UserXtrCounters sender){
         if(message.length()<=0||message.toCharArray()[0]!='/') return;
         String data=message.toLowerCase().substring(1);
-        int id = addressee.getId();
+        int id = sender.getId();
         if(data.equals("greeting")){
             String heart= emojies.get("heart");
             bot.sendMessage(id,"Привет, я временно заменяю хозяина этой страницы.\n" +
@@ -247,16 +250,16 @@ public class MessageReplier {
                     "Или можем просто поболтать, но я еще учусь, и мои ответы могут быть не совсем точными.\n"+
                     "Знаю, пока это немного, но я развиваюсь"+ emojies.get("cuteSmile"));
         } else if (data.equals("likesonwall")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateCountOfLikes(addressee,"wall")+ emojies.get("heart")+" лайков под " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(sender,"wall")+ emojies.get("heart")+" лайков под " +
                     "фотографиями на стене.");
         } else if (data.equals("likesonprofile")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateCountOfLikes(addressee,"profile")+ emojies.get("heart")+" лайков " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(sender,"profile")+ emojies.get("heart")+" лайков " +
                     "под фотографиями в профиле.");
         } else if (data.equals("totallikes")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateContOfLikesOnPosts(addressee)+ emojies.get("heart")+" лайков " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateContOfLikesOnPosts(sender)+ emojies.get("heart")+" лайков " +
                     "под записями на стене.");
         } else if(data.equals("btrate")){
             String[] btrate=bot.bitcoinRate();
@@ -275,7 +278,7 @@ public class MessageReplier {
             bot.sendMessage(id,"Минутку...");
             bot.sendMessageWithVideo(id,"",bot.randomVideo());
         }else if (data.equals("fuckoff")){
-            bot.sendMessage(id,addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"
+            bot.sendMessage(id,sender.getFirstName()+" "+sender.getLastName()+", иди нахер"
                     + emojies.get("fuck"));
         } else if(data.matches("forecast.*")){
             String emojiLine= emojies.get("thermometer")+ emojies.get("sun")
@@ -325,7 +328,7 @@ public class MessageReplier {
     /**
      * Parse user message to himself.
      * @param message user message
-     * @param addressee user who send message
+     * @param sender user who send message
      * Functions:
      * @see Bot#sendMessage(int, String)
      * @see Bot#calculateCountOfLikes(UserXtrCounters, String)
@@ -338,21 +341,21 @@ public class MessageReplier {
      * @see Bot#startLongPoll()
      * @see Bot#exit(int)
      */
-    public void parseAdmin(String message, UserXtrCounters addressee){
+    public void parseAdmin(String message, UserXtrCounters sender){
         if(message.length()<=1||message.toCharArray()[0]!='/') return;
         String data=message.toLowerCase().substring(1);
-        int id = addressee.getId();
+        int id = sender.getId();
         if (data.equals("likesonwall")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateCountOfLikes(addressee,"wall")+ emojies.get("heart")+" лайков под " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(sender,"wall")+ emojies.get("heart")+" лайков под " +
                     "фотографиями на стене.");
         } else if (data.equals("likesonprofile")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateCountOfLikes(addressee,"profile")+ emojies.get("heart")+" лайков " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateCountOfLikes(sender,"profile")+ emojies.get("heart")+" лайков " +
                     "под фотографиями в профиле.");
         } else if (data.equals("totallikes")){
-            bot.sendMessage(id,""+addressee.getFirstName()+" "+addressee.getLastName()+", " +
-                    "у тебя "+bot.calculateContOfLikesOnPosts(addressee)+ emojies.get("heart")+" лайков " +
+            bot.sendMessage(id,""+sender.getFirstName()+" "+sender.getLastName()+", " +
+                    "у тебя "+bot.calculateContOfLikesOnPosts(sender)+ emojies.get("heart")+" лайков " +
                     "под записями на стене.");
         } else if(data.equals("btrate")){
             String[] btrate=bot.bitcoinRate();
@@ -361,7 +364,7 @@ public class MessageReplier {
                     "Покупка: "+btrate[1]+dollar+"\n"+
                     "Продажа: "+btrate[2]+dollar);
         }else if (data.equals("fuckoff")){
-            bot.sendMessage(id,addressee.getFirstName()+" "+addressee.getLastName()+", иди нахер"
+            bot.sendMessage(id,sender.getFirstName()+" "+sender.getLastName()+", иди нахер"
                     + emojies.get("fuck"));
         } else if(data.matches("forecast.*")){
             String emojiLine= emojies.get("thermometer")+ emojies.get("sun")

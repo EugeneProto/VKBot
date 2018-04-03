@@ -19,11 +19,13 @@ import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
+/**
+ * Here is the main interactions with Vk Api.
+ */
 public class MainApiInteracter {
     private UserActor user;
     private VkApiClient vk;
@@ -34,6 +36,12 @@ public class MainApiInteracter {
         this.vk=vk;
         this.logger= Bot.logger;
     }
+
+    /**
+     * Send message with text or emoji.
+     * @param id receiver id
+     * @param text message text
+     */
     public void sendMessage(int id, String text){
         try {
             vk.messages()
@@ -47,13 +55,22 @@ public class MainApiInteracter {
             logger.error("Client Exception when sending message.");
         }
     }
+
+    /**
+     * @see MainApiInteracter#sendMessage(int, String)
+     */
     public void sendMessageToOwner(String text){
         sendMessage(user.getId(),text);
     }
 
-    public void sendMessageWithPhoto(int id,String text,File photo){
-        sendMessageWithPhoto(id, text, uploadPhoto(photo));
-    }
+
+
+    /**
+     * Send message with video attachment.
+     * @param id receiver id
+     * @param text text (not necessary)
+     * @param video video identifier
+     */
     public void sendMessageWithVideo(int id,String text,String video){
         try {
             if (text!=null&&!text.equals("")&&video!=null&&!video.equals(""))
@@ -81,6 +98,13 @@ public class MainApiInteracter {
             logger.error("Client Exception when sending message.");
         }
     }
+
+    /**
+     * Send message with photo attachment(s).
+     * @param id receiver id
+     * @param text text (not necessary)
+     * @param photo photo identifiers
+     */
     public void sendMessageWithPhoto(int id,String text,String...photo){
         try {
             if (text!=null&&!text.equals("")&&photo!=null&&photo.length>0) {
@@ -109,6 +133,20 @@ public class MainApiInteracter {
             logger.error("Client Exception when sending message.");
         }
     }
+
+    /**
+     * @see MainApiInteracter#uploadPhoto(File)
+     * @see MainApiInteracter#sendMessageWithPhoto(int, String, String...)
+     */
+    public void sendMessageWithPhoto(int id,String text,File photo){
+        sendMessageWithPhoto(id, text, uploadPhoto(photo));
+    }
+
+    /**
+     * Upload photo to Vk server.
+     * @param photo photo file
+     * @return photo identifier
+     */
     private String uploadPhoto(File photo){
         String attachment="";
         try {
@@ -157,7 +195,7 @@ public class MainApiInteracter {
             return params;
         }
     }
-    public UserXtrCounters getAddressee(String id){
+    public UserXtrCounters getSender(String id){
         UserXtrCounters counters=new UserXtrCounters();
         try {
             counters=vk.users().get(user)

@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 
 import java.util.*;
 
+/**
+ * Class for calculating likes using Vk Api.
+ */
 public class LikesCounter {
     private UserActor user;
     private VkApiClient vk;
@@ -24,6 +27,12 @@ public class LikesCounter {
         this.logger = Bot.logger;
     }
 
+    /**
+     * Calculating likes on photos in albums.
+     * @param target user target
+     * @param albumId "wall" or "profile" or in some cases "saved"
+     * @return count of likes
+     */
     public int calculateCountOfLikes(UserXtrCounters target, String albumId) {
         int likes = 0;
         try {
@@ -44,6 +53,12 @@ public class LikesCounter {
             return likes;
         }
     }
+
+    /**
+     * Calculate likes on posts on target wall.
+     * @param target user target
+     * @return count of likes
+     */
     public int calculateContOfLikesOnPosts(UserXtrCounters target){
         int likes=0;
         try {

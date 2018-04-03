@@ -2,6 +2,9 @@ package bot.tasks;
 
 import java.util.Random;
 
+/**
+ * Simple game just for fun.
+ */
 public class GuessNumber {
     private int number,countOfTryings;
 

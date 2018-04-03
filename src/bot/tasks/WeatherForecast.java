@@ -12,27 +12,35 @@ import org.slf4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
+/**
+ * Class for receiving weather forecast.
+ */
 public class WeatherForecast {
     private Logger logger;
-    private String id;
+    private String weatherKey;
 
-    public WeatherForecast(String id) {
+    public WeatherForecast(String weatherKey) {
         this.logger = Bot.logger;
-        this.id=id;
+        this.weatherKey =weatherKey;
     }
 
+    /**
+     * Receive forecast from weather service.
+     * @param city city
+     * @param countryCode
+     * @return
+     */
     public String receiveWeatherForecast(String city,String countryCode){
         String result="";
         try {
             city=city.replaceAll(" ","+");
             HttpClient client=HttpClientBuilder.create().build();
             HttpGet request= new HttpGet("http://api.openweathermap.org/data/2.5/forecast?" +
-                    "q="+city+","+countryCode+"&lang=ru&units=metric&appid="+id);
+                    "q="+city+","+countryCode+"&lang=ru&units=metric&appid="+ weatherKey);
             request.addHeader("User-Agent",USER_AGENT);
             HttpResponse response=client.execute(request);
             BufferedReader reader=new BufferedReader(new InputStreamReader(response.getEntity().getContent()));

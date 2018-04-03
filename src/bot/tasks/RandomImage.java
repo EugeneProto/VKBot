@@ -12,6 +12,9 @@ import java.io.*;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
+/**
+ * Random image from Lorem Picsum site.
+ */
 public class RandomImage {
     private Logger logger;
 
