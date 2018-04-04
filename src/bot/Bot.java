@@ -102,14 +102,14 @@ public class Bot {
         try {
             Properties properties=new Properties();
             properties.load(Bot.class.getClassLoader().getResourceAsStream("config.properties"));
-            AI_CLIENT_KEY =(String)properties.get("ai-client-key");
-            WEATHER_KEY =(String)properties.get("weather-key");
-            GOOGLE_KEY =(String)properties.get("google-key");
-            ACCESS_TOKEN=(String)properties.get("access-token");
-            USER_ID_MAIN=Integer.valueOf((String)properties.get("user-id-main"));
-            MEME_RESOURCES=new int[]{Integer.valueOf((String)properties.get("meme-4ch")),
-                    Integer.valueOf((String)properties.get("meme-mdk")),
-                    Integer.valueOf((String)properties.get("meme-9gag"))};
+            AI_CLIENT_KEY =properties.getProperty("ai-client-key");
+            WEATHER_KEY =properties.getProperty("weather-key");
+            GOOGLE_KEY =properties.getProperty("google-key");
+            ACCESS_TOKEN=properties.getProperty("access-token");
+            USER_ID_MAIN=Integer.valueOf(properties.getProperty("user-id-main"));
+            MEME_RESOURCES=new int[]{Integer.valueOf(properties.getProperty("meme-4ch")),
+                    Integer.valueOf(properties.getProperty("meme-mdk")),
+                    Integer.valueOf(properties.getProperty("meme-9gag"))};
         } catch (IOException e) {
             logger.error("Initialize error (can`t load properties).");
         }
