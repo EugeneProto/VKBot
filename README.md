@@ -20,8 +20,8 @@ and parameter `response_type=token`). At `config.properties` file `access-token`
 is access token, `user-id-main` is your id in Vk.
 
 ### Google APIs
-Create project on [Google APIs Console](https://console.developers.google.com). Then add [Google Distance Matrix Api](https://console.developers.google.com/apis/library/distance-matrix-backend.googleapis.com)<br>
-and [Dialogflow Api](https://console.developers.google.com/apis/library/dialogflow.googleapis.com) to your project. Create agent at Dialogflow (learn more [here](https://dialogflow.com/docs/getting-started/basics)).<br>
+Create project on [Google APIs Console](https://console.developers.google.com). Then add [Google Distance Matrix API](https://console.developers.google.com/apis/library/distance-matrix-backend.googleapis.com)<br>
+and [Dialogflow API](https://console.developers.google.com/apis/library/dialogflow.googleapis.com) to your project. Create agent at Dialogflow (learn more [here](https://dialogflow.com/docs/getting-started/basics)).<br>
 At `config.properties` file `google-key` is your google app API key,<br>
 `ai-client-key` is Dialogflow access token.
 
