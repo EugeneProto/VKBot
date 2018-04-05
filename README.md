@@ -14,7 +14,7 @@ You can find all of this libraries in Maven. Downlad it before start working.
 ## APIs
 
 ### Vk API
-First of all, create standalone app at [Vk Developers](https://vk.com/apps?act=manage). Read about [authorization](https://vk.com/dev/implicit_flow_user) in Vk<br>
+First of all, create standalone app at [Vk Developers](https://vk.com/editapp?act=create). Read about [authorization](https://vk.com/dev/implicit_flow_user) in Vk<br>
 (for my app, parameter `scope=friends,messages,offline,status,photos,video`<br>
 and parameter `response_type=token`). At `config.properties` file `access-token`<br>
 is access token, `user-id-main` is your id in Vk.
