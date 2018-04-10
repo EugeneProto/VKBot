@@ -73,7 +73,7 @@ public class LongPollHandler extends Thread {
             LongpollParams params=bot.getLongpollParams();
             int ts=params.getTs();
             String key = params.getKey(),server = params.getServer();
-            while (this.isAlive()){
+            while (isAlive()){
                 request = new HttpGet("https://"+ server +"?act=a_check&" +
                             "key="+ key +"&ts="+ts+"&wait=25&mode=2&version=2");
                     request.addHeader("User-Agent", USER_AGENT);
@@ -115,27 +115,32 @@ public class LongPollHandler extends Thread {
                 if (update.getInt(0)!=4) continue;
 
                 int flag = update.getInt(2), id = update.getInt(3);
-                boolean isIgnored = bot.isIgnored(id), isPlaying = bot.isPlaying(id);
+                boolean isIgnored = bot.isIgnored(id), isPlaying = bot.isPlaying(id),
+                        isNewSession=bot.isNewSession(id);
                 if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&!isPlaying&&id!=userId){
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
-                        replier.parse(new String(update.getString(5).getBytes(), Charset.forName("UTF-8")),sender);
+                        replier.parse(isNewSession?"привет": new String(update.getString(5).getBytes(),
+                                Charset.forName("UTF-8")),sender);
                     });
                 }else if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&isPlaying&& id!=userId){
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
-                        replier.parseGame(new String(update.getString(5).getBytes(),Charset.forName("UTF-8")),sender);
+                        replier.parseGame(new String(update.getString(5).getBytes(),
+                                Charset.forName("UTF-8")),sender);
                     });
                 } else if(shouldReact&&((flag &2)==2)&&id <2000000000&&id!=userId){
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
-                        replier.parseUser(new String(update.getString(5).getBytes(),Charset.forName("UTF-8")),sender);
+                        replier.parseUser(new String(update.getString(5).getBytes(),
+                                Charset.forName("UTF-8")),sender);
                     });
 
                 } else if(id==userId){
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
-                        replier.parseAdmin(new String(update.getString(5).getBytes(),Charset.forName("UTF-8")),sender);
+                        replier.parseAdmin(new String(update.getString(5).getBytes(),
+                                Charset.forName("UTF-8")),sender);
                     });
 
                 }

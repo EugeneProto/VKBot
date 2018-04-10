@@ -70,7 +70,13 @@ public class Bot {
      * @see Bot#unignore(int)
      * @see Bot#isIgnored(int)
      */
-    private HashSet<Integer> ignored;
+    private HashSet<Integer> ignored,
+
+    /**
+     * User sessions.
+     * @see Bot#isNewSession(int)
+     */
+    sessions;
 
     /**
      * User status before bot`s launch.
@@ -122,6 +128,7 @@ public class Bot {
     private void initBot(){
         ignored=new HashSet<>();
         guessGame=new LinkedHashMap<>();
+        sessions=new HashSet<>();
         countOfInteractions=new AtomicInteger(0);
         VkApiClient vk=new VkApiClient(new HttpTransportClient());
         UserActor user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
@@ -140,7 +147,7 @@ public class Bot {
                 "║╚╝║╚══╣║─║║─║║║║║\n" +
                 "║╔╗║╔══╣║─║║─║║║╠╝\n" +
                 "║║║║╚══╣╚═╣╚═╣╚╝╠╗\n" +
-                "╚╝╚╩═══╩══╩══╩══╩╝");
+                "╚╝╚╩═══╩══╩══╩══╩╝\n");
     }
     private void initEmojies(){
         emojies=new HashMap<>();
@@ -292,23 +299,45 @@ public class Bot {
     /**
      * Service functions.
      */
-    public synchronized void interruptLongPoll(){
-        handler.setShouldReact(false);
-        System.out.println("Long Poll interrupted.");
+    public void interruptLongPoll(){
+        synchronized (handler) {
+            handler.setShouldReact(false);
+            System.out.println("Long Poll interrupted.");
+        }
     }
-    public synchronized void startLongPoll(){
-        handler.setShouldReact(true);
-        System.out.println("Long Poll started.");
+    public void startLongPoll(){
+        synchronized (handler) {
+            handler.setShouldReact(true);
+            System.out.println("Long Poll started.");
+        }
     }
-    public synchronized void ignore(int id){
-        ignored.add(id);
+    public void ignore(int id){
+        synchronized (ignored) {
+            ignored.add(id);
+        }
     }
-    public synchronized void unignore(int id){
-        ignored.remove(id);
+    public void unignore(int id){
+        synchronized (ignored) {
+            ignored.remove(id);
+        }
     }
-    public synchronized boolean isIgnored(int id){
-        return ignored.contains(id);
+    public boolean isIgnored(int id){
+        synchronized (ignored) {
+            return ignored.contains(id);
+        }
     }
+    public boolean isNewSession(int id){
+        synchronized (sessions) {
+            if(sessions.contains(id)){
+                return false;
+            }
+            else {
+                sessions.add(id);
+                return true;
+            }
+        }
+    }
+
 
     /**
      * Get methods.
@@ -340,7 +369,7 @@ public class Bot {
                     + new Date().toString() + "]\nBye-bye!");
             interacter.setStatus(userStatus);
             interacter.setOnline(false);
-            System.out.println("╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
+            System.out.println("\n╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
                     "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╣║\n" +
                     "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╣║\n" +
                     "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╩╝\n" +

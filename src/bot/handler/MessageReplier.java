@@ -46,7 +46,8 @@ public class MessageReplier {
         int id = sender.getId();
         if(data.matches("здравствуй.*|привет.*")){
             String heart= emojies.get("heart");
-            bot.sendMessage(id,"Привет, я временно заменяю хозяина этой страницы.\n" +
+            bot.sendMessage(id,"Привет, "+sender.getFirstName()+" "+sender.getLastName()+
+                    ", я временно заменяю хозяина этой страницы.\n" +
                     "И не зови меня бот. Зови меня Юджин"+ emojies.get("coolEmoji")+"\n\n" +
                     "Вот что я пока могу:\n\n" +
                     "1.\"Лайки на стене\": пришлю суммарное количество лайков " +
@@ -144,55 +145,6 @@ public class MessageReplier {
     }
 
     /**
-     * If user is playing game for parse use this method.
-     * @param message user message
-     * @param sender user who send message
-     * Functions:
-     * @see Bot#startNewGame(int)
-     * @see Bot#endGame(int)
-     */
-    public void parseGame(String message, UserXtrCounters sender){
-        String data=message.toLowerCase();
-        int id = sender.getId();
-        if (data.equals("хватит")) {
-            bot.endGame(id);
-            bot.sendMessage(id,"Спасибо за игру!");
-        } else if(data.equals("заново")){
-            bot.startNewGame(id);
-            bot.sendMessage(id,"Число загадано и игра началась!");
-        } else if(data.matches("&gt;\\d*")){
-            try {
-                boolean isCorrect=bot.checkStatement(id, '>',Integer.valueOf(data.substring(4)));
-                bot.sendMessage(id,isCorrect?"Да":"Нет");
-            } catch (NumberFormatException e) {
-                bot.sendMessage(id,"Некорректный ввод. Ввод должен быть" +
-                        " в формате \"<операция><число>\" или \"<число>\"");
-            }
-        } else if(data.matches("&lt;\\d*")){
-            try {
-                boolean isCorrect=bot.checkStatement(id, '<',Integer.valueOf(data.substring(4)));
-                bot.sendMessage(id,isCorrect?"Да":"Нет");
-            } catch (NumberFormatException e) {
-                bot.sendMessage(id,"Некорректный ввод. Ввод должен быть" +
-                        " в формате \"<операция><число>\" или \"<число>\"");
-            }
-        } else{
-            try {
-                boolean isFemale= sender.getSex() != null && sender.getSex().getValue() == 1;
-                boolean isCorrect=bot.checkNumber(id,Integer.valueOf(data));
-                bot.sendMessage(id,isCorrect?"Ура! Ты "+
-                        (isFemale?"угадала":"угадал")+" за "
-                        +bot.countOfTryings(id)+" попыток!" +
-                        " Спасибо за игру.":"Нет");
-                if (isCorrect) bot.endGame(id);
-            } catch (NumberFormatException e) {
-                bot.sendMessage(id,"Некорректный ввод. Ввод должен быть" +
-                        " в формате \"<операция><число>\" или \"<число>\"");
-            }
-        }
-    }
-
-    /**
      * Parse and reply to output message in chat
      * (which send user who have launched the app).
      * @param message user message
@@ -220,7 +172,8 @@ public class MessageReplier {
         int id = sender.getId();
         if(data.equals("greeting")){
             String heart= emojies.get("heart");
-            bot.sendMessage(id,"Привет, я временно заменяю хозяина этой страницы.\n" +
+            bot.sendMessage(id,"Привет, "+sender.getFirstName()+" "+sender.getLastName()+
+                    ", я временно заменяю хозяина этой страницы.\n" +
                     "И не зови меня бот. Зови меня Юджин"+ emojies.get("coolEmoji")+"\n\n" +
                     "Вот что я пока могу:\n\n" +
                     "1.\"Лайки на стене\": пришлю суммарное количество лайков " +
@@ -322,6 +275,55 @@ public class MessageReplier {
                     "/forecast: <city>, <country code>\n/ai: <query>\n/ignore\n/unignore\n" +
                     "/subway: <city>, <origin>, <destination>\n/randomPhoto\n/randomMeme\n" +
                     "/randomVideo");
+        }
+    }
+
+    /**
+     * If user is playing game for parse use this method.
+     * @param message user message
+     * @param sender user who send message
+     * Functions:
+     * @see Bot#startNewGame(int)
+     * @see Bot#endGame(int)
+     */
+    public void parseGame(String message, UserXtrCounters sender){
+        String data=message.toLowerCase();
+        int id = sender.getId();
+        if (data.equals("хватит")) {
+            bot.endGame(id);
+            bot.sendMessage(id,"Спасибо за игру!");
+        } else if(data.equals("заново")){
+            bot.startNewGame(id);
+            bot.sendMessage(id,"Число загадано и игра началась!");
+        } else if(data.matches("&gt;\\d*")){
+            try {
+                boolean isCorrect=bot.checkStatement(id, '>',Integer.valueOf(data.substring(4)));
+                bot.sendMessage(id,isCorrect?"Да":"Нет");
+            } catch (NumberFormatException e) {
+                bot.sendMessage(id,"Некорректный ввод. Ввод должен быть" +
+                        " в формате \"<операция><число>\" или \"<число>\"");
+            }
+        } else if(data.matches("&lt;\\d*")){
+            try {
+                boolean isCorrect=bot.checkStatement(id, '<',Integer.valueOf(data.substring(4)));
+                bot.sendMessage(id,isCorrect?"Да":"Нет");
+            } catch (NumberFormatException e) {
+                bot.sendMessage(id,"Некорректный ввод. Ввод должен быть" +
+                        " в формате \"<операция><число>\" или \"<число>\"");
+            }
+        } else{
+            try {
+                boolean isFemale= sender.getSex() != null && sender.getSex().getValue() == 1;
+                boolean isCorrect=bot.checkNumber(id,Integer.valueOf(data));
+                bot.sendMessage(id,isCorrect?"Ура! Ты "+
+                        (isFemale?"угадала":"угадал")+" за "
+                        +bot.countOfTryings(id)+" попыток!" +
+                        " Спасибо за игру.":"Нет");
+                if (isCorrect) bot.endGame(id);
+            } catch (NumberFormatException e) {
+                bot.sendMessage(id,"Некорректный ввод. Ввод должен быть" +
+                        " в формате \"<операция><число>\" или \"<число>\"");
+            }
         }
     }
 
