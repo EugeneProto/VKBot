@@ -47,6 +47,7 @@ public class WeatherForecast {
             StringBuffer buffer=new StringBuffer();
             String line;
             while((line=reader.readLine())!=null) buffer.append(line);
+            reader.close();
             result=parseJson(new JSONObject(buffer.toString()));
         } catch (IOException e) {
             logger.error("IO Exception when receiving weather.");

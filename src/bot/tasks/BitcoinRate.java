@@ -40,6 +40,7 @@ public class BitcoinRate {
             StringBuffer result=new StringBuffer();
             String line;
             while ((line=reader.readLine())!=null) result.append(line);
+            reader.close();
             rate=parseJson(new JSONObject(result.toString()));
         } catch (IOException e) {
             logger.error("IO Exception when counting Bitcoin Rate");

@@ -165,6 +165,7 @@ public class MainApiInteracter {
             StringBuffer buffer=new StringBuffer();
             String line;
             while ((line=reader.readLine())!=null) buffer.append(line);
+            reader.close();
             JSONObject result=new JSONObject(buffer.toString());
             Photo att=vk.photos()
                     .saveMessagesPhoto(user,result.getString("photo"))

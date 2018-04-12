@@ -78,13 +78,14 @@ public class LongPollHandler extends Thread {
                             "key="+ key +"&ts="+ts+"&wait=25&mode=2&version=2");
                     request.addHeader("User-Agent", USER_AGENT);
                     response = client.execute(request);
-                    BufferedReader rd = new BufferedReader(
+                    BufferedReader reader = new BufferedReader(
                             new InputStreamReader(response.getEntity().getContent()));
                     StringBuffer result = new StringBuffer();
                     String line;
-                    while ((line = rd.readLine()) != null) {
+                    while ((line = reader.readLine()) != null) {
                         result.append(line);
                     }
+                    reader.close();
                     JSONObject object=new JSONObject(result.toString());
                 if (object.has("ts")&&object.has("updates")) {
                     ts=object.getInt("ts");

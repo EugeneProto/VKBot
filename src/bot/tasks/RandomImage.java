@@ -35,6 +35,8 @@ public class RandomImage {
             InputStream is=response.getEntity().getContent();
             FileOutputStream os=new FileOutputStream(photo);
             IOUtils.copy(is,os);
+            os.close();
+            is.close();
         }catch (IOException e){
             logger.error("IO Exception when getting random image.");
         }finally {
