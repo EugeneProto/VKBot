@@ -1,14 +1,12 @@
 package bot;
 
-import ai.api.AIConfiguration;
-import ai.api.AIDataService;
-import ai.api.AIServiceException;
-import ai.api.model.AIRequest;
-import ai.api.model.AIResponse;
 import bot.handler.LongPollHandler;
 import bot.handler.MessageReplier;
 import bot.tasks.*;
 import bot.utils.Pair;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.dialogflow.v2.*;
 import com.google.maps.GeoApiContext;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
@@ -18,10 +16,12 @@ import com.vk.api.sdk.objects.users.UserXtrCounters;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.Unsafe;
 
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,7 +35,7 @@ public class Bot {
      * @see Bot#loadConfig()
      * @see Bot#initBot()
      */
-    private String AI_CLIENT_KEY, GOOGLE_KEY,ACCESS_TOKEN, WEATHER_KEY;
+    private String GOOGLE_KEY,ACCESS_TOKEN, WEATHER_KEY, PROJECT_ID;
     private int USER_ID_MAIN;
     private int[] MEME_RESOURCES;
 
@@ -47,7 +47,8 @@ public class Bot {
      */
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
     private Map<String,String> emojies;
-    private AIDataService dataService;
+    private SessionsClient sessionsClient;
+    private SessionName session;
     private LongPollHandler handler;
 
     /**
@@ -98,7 +99,25 @@ public class Bot {
     }
 
     public static void main(String[] args) {
+        disableWarning();
         new Bot();
+    }
+
+    /**
+     * Hack to hide Netty`s warn message (only for Java 9).
+     */
+    private static void disableWarning() {
+        try {
+            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+            theUnsafe.setAccessible(true);
+            Unsafe u = (Unsafe) theUnsafe.get(null);
+
+            Class cls = Class.forName("jdk.internal.module.IllegalAccessLogger");
+            Field logger = cls.getDeclaredField("logger");
+            u.putObjectVolatile(cls, u.staticFieldOffset(logger), null);
+        } catch (Exception e) {
+            // ignore
+        }
     }
 
     /**
@@ -108,7 +127,7 @@ public class Bot {
         try {
             Properties properties=new Properties();
             properties.load(Bot.class.getClassLoader().getResourceAsStream("config.properties"));
-            AI_CLIENT_KEY =properties.getProperty("ai-client-key");
+            PROJECT_ID=properties.getProperty("project-id");
             WEATHER_KEY =properties.getProperty("weather-key");
             GOOGLE_KEY =properties.getProperty("google-key");
             ACCESS_TOKEN=properties.getProperty("access-token");
@@ -189,7 +208,17 @@ public class Bot {
         converter=new TextConverter();
     }
     private void initAi(){
-        dataService=new AIDataService(new AIConfiguration(AI_CLIENT_KEY));
+        try {
+            session=SessionName.of(PROJECT_ID,UUID.randomUUID().toString());
+            SessionsSettings sessionsSettings = SessionsSettings.newBuilder()
+                    .setCredentialsProvider(FixedCredentialsProvider.create(ServiceAccountCredentials
+                            .fromStream(Bot.class.getClassLoader().getResourceAsStream("VkBotCredentials.json"))))
+                            .build();
+            sessionsClient=SessionsClient.create(sessionsSettings);
+        } catch (IOException e) {
+            logger.error("IO Exception when initializing Sessions AI Client.");
+        }
+
     }
 
 
@@ -259,23 +288,35 @@ public class Bot {
     /**
      * Game methods.
      */
-    public synchronized boolean isPlaying(int id){
-        return guessGame.containsKey(id);
+    public boolean isPlaying(int id){
+        synchronized (guessGame) {
+            return guessGame.containsKey(id);
+        }
     }
-    public synchronized void startNewGame(int id){
-        guessGame.put(id,new GuessNumber());
+    public void startNewGame(int id){
+        synchronized (guessGame) {
+            guessGame.put(id,new GuessNumber());
+        }
     }
-    public synchronized void endGame(int id){
-        guessGame.remove(id);
+    public void endGame(int id){
+        synchronized (guessGame) {
+            guessGame.remove(id);
+        }
     }
-    public synchronized boolean checkStatement(int id,char operation,int input){
-        return guessGame.get(id).checkStatement(operation, input);
+    public boolean checkStatement(int id,char operation,int input){
+        synchronized (guessGame) {
+            return guessGame.get(id).checkStatement(operation, input);
+        }
     }
-    public synchronized boolean checkNumber(int id,int input){
-        return guessGame.get(id).checkNumber(input);
+    public boolean checkNumber(int id,int input){
+        synchronized (guessGame) {
+            return guessGame.get(id).checkNumber(input);
+        }
     }
-    public synchronized int countOfTryings(int id){
-        return guessGame.get(id).countOfTryings();
+    public int countOfTryings(int id){
+        synchronized (guessGame) {
+            return guessGame.get(id).countOfTryings();
+        }
     }
 
     /**
@@ -284,16 +325,10 @@ public class Bot {
      * @return chat-bot answer
      */
     public String aiAnswer(String input){
-        String result="";
-        try {
-            AIRequest request = new AIRequest(input);
-            AIResponse response = dataService.request(request);
-            if(response.getStatus().getCode()==200) result=response.getResult().getFulfillment().getSpeech();
-        } catch (AIServiceException e) {
-            logger.info("AI Service Exception when ai answering.");
-        } finally {
-            return result;
-        }
+        TextInput.Builder textInput = TextInput.newBuilder().setText(input).setLanguageCode("ru");
+        QueryInput queryInput = QueryInput.newBuilder().setText(textInput).build();
+        DetectIntentResponse response = sessionsClient.detectIntent(session,queryInput);
+        return response.getQueryResult().getFulfillmentText();
     }
 
     /**

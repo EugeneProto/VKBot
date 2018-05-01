@@ -33,7 +33,7 @@ public class DistanceCounter {
      * @param city city with subway
      * @param origin origin subway station
      * @param destination destination subway station
-     * @return
+     * @return time
      */
     public String calculateTimeInSubway(String city,String origin, String destination){
         String result="";
