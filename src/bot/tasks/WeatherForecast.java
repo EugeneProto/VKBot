@@ -70,6 +70,7 @@ public class WeatherForecast {
                     getString("description").getBytes(), Charset.forName("UTF-8")))
                 .append("\n"+"\n");
         }
-        return result.toString();
+
+        return result.toString().substring(0,result.length()-2);
     }
 }

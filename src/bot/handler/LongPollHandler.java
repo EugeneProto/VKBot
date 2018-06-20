@@ -121,7 +121,7 @@ public class LongPollHandler extends Thread {
                 if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&!isPlaying&&id!=userId){
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
-                        replier.parse(isNewSession?"привет": new String(update.getString(5).getBytes(),
+                        replier.detectQueryOrParse(isNewSession?"привет": new String(update.getString(5).getBytes(),
                                 Charset.forName("UTF-8")),sender);
                     });
                 }else if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&isPlaying&& id!=userId){
