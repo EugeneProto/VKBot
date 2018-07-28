@@ -1,5 +1,6 @@
 # VKBot
-Bot for VK social network with some usefull and funny functions.
+Bot for VK social network with some usefull and funny functions.<br/>
+[Here](https://vk.com/eugenebot) is working group with bot.
 ***
 ## Dependencies
 This project use these libraries:
@@ -15,11 +16,11 @@ You can find all of this libraries in Maven. Downlad it before start working.
 ## APIs
 
 ### Vk API
-First of all, create standalone app at [Vk Developers](https://vk.com/editapp?act=create). Read about authorization [for users](https://vk.com/dev/implicit_flow_user) (for my app,<br/> 
-parameter `scope=offline,photos,video,wall`and parameter `response_type=token`) and [for groups](https://vk.com/dev/bots_docs) in VK <br>
-At `config.properties` file `group-access-token` is access token for your group,<br/>
-`group-id` is your group id in VK, `owner-access-token` is your access token,<br/>
-`owner-id` is your id in VK.
+First of all, create standalone app at [Vk Developers](https://vk.com/editapp?act=create). Read about authorization [for users](https://vk.com/dev/implicit_flow_user)<br/>
+(for my app, parameter `scope=offline,photos,video,wall` and parameter `response_type=token`)<br/> 
+and [for groups](https://vk.com/dev/bots_docs) in VK. At `config.properties` file `group-access-token`<br/>
+is access token for your group, `group-id` is your group id in VK,<br/> 
+`owner-access-token` is your access token,`owner-id` is your id in VK.
 
 ### Google APIs
 Create project on [Google APIs Console](https://console.developers.google.com). Then add [Google Distance Matrix API](https://console.developers.google.com/apis/library/distance-matrix-backend.googleapis.com)<br>
