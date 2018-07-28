@@ -20,7 +20,7 @@ First of all, create standalone app at [Vk Developers](https://vk.com/editapp?ac
 (for my app, parameter `scope=offline,photos,video,wall` and parameter `response_type=token`)<br/> 
 and [for groups](https://vk.com/dev/bots_docs) in VK. At `config.properties` file `group-access-token`<br/>
 is access token for your group, `group-id` is your group id in VK,<br/> 
-`owner-access-token` is your access token,`owner-id` is your id in VK.
+`owner-access-token` is your access token, `owner-id` is your id in VK.
 
 ### Google APIs
 Create project on [Google APIs Console](https://console.developers.google.com). Then add [Google Distance Matrix API](https://console.developers.google.com/apis/library/distance-matrix-backend.googleapis.com)<br>
