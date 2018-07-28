@@ -1,29 +1,23 @@
 package bot.tasks;
 
 
-import bot.Bot;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
+import static bot.Bot.logger;
 
 /**
  * Class for receiving bitcoin rate.
  */
 public class BitcoinRate {
-    private Logger logger;
-
-    public BitcoinRate() {
-        this.logger = Bot.logger;
-    }
 
     /**
      * Connect to server and receive rate.

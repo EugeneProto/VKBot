@@ -8,23 +8,22 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.photos.PhotoFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 
-import com.vk.api.sdk.objects.wall.WallpostFull;
-import org.slf4j.Logger;
+import com.vk.api.sdk.objects.wall.WallPostFull;
 
 import java.util.*;
+
+import static bot.Bot.logger;
 
 /**
  * Class for calculating likes using Vk Api.
  */
 public class LikesCounter {
-    private UserActor user;
+    private UserActor owner;
     private VkApiClient vk;
-    private Logger logger;
 
-    public LikesCounter(UserActor user, VkApiClient vk) {
-        this.user = user;
+    public LikesCounter(UserActor owner, VkApiClient vk) {
+        this.owner = owner;
         this.vk = vk;
-        this.logger = Bot.logger;
     }
 
     /**
@@ -37,7 +36,7 @@ public class LikesCounter {
         int likes = 0;
         try {
             List<PhotoFull> photos = vk.photos()
-                    .getExtended(user)
+                    .getExtended(owner)
                     .ownerId(target.getId())
                     .albumId(albumId)
                     .count(100)
@@ -62,13 +61,13 @@ public class LikesCounter {
     public int calculateContOfLikesOnPosts(UserXtrCounters target){
         int likes=0;
         try {
-                List<WallpostFull> posts= vk.wall()
-                        .get(user)
+                List<WallPostFull> posts= vk.wall()
+                        .get(owner)
                         .ownerId(target.getId())
                         .count(100)
                         .execute()
                         .getItems();
-                for (WallpostFull post:posts) likes+=post.getLikes().getCount();
+                for (WallPostFull post:posts) likes+=post.getLikes().getCount();
 
         } catch (ApiException e) {
             logger.error("Api Exception when counting likes.");

@@ -9,6 +9,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.dialogflow.v2.*;
 import com.google.maps.GeoApiContext;
 import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.LongpollParams;
@@ -35,15 +36,15 @@ public class Bot {
      * @see Bot#loadConfig()
      * @see Bot#initBot()
      */
-    private String GOOGLE_KEY,ACCESS_TOKEN, WEATHER_KEY, PROJECT_ID;
-    private int USER_ID_MAIN;
+    private String GOOGLE_KEY, GROUP_ACCESS_TOKEN,OWNER_ACCESS_TOKEN, WEATHER_KEY, PROJECT_ID;
+    private int OWNER_ID,GROUP_ID;
     private int[] MEME_RESOURCES;
 
     /**
      * Service fields.
      * @see Bot#initEmojies()
      * @see Bot#initAi()
-     * @see Bot#initLongPollHandler(int)
+     * @see Bot#initLongPollHandler()
      */
     public static final Logger logger= LoggerFactory.getLogger(Bot.class);
     private Map<String,String> emojies;
@@ -52,10 +53,15 @@ public class Bot {
     private LongPollHandler handler;
 
     /**
-     * Tasks for bot.
-     * @see Bot#initTasks(VkApiClient, UserActor)
+     * Main functions, such as send message or post
+     * something on wall.
      */
     private MainApiInteracter interacter;
+
+    /**
+     * Tasks for bot.
+     * @see Bot#initMainInteracterAndTasks(GroupActor, UserActor, VkApiClient)
+     */
     private LikesCounter counter;
     private BitcoinRate bitcoinRate;
     private WeatherForecast forecast;
@@ -71,20 +77,7 @@ public class Bot {
      * @see Bot#unignore(int)
      * @see Bot#isIgnored(int)
      */
-    private HashSet<Integer> ignored,
-
-    /**
-     * User sessions.
-     * @see Bot#isNewSession(int)
-     */
-    sessions;
-
-    /**
-     * User status before bot`s launch.
-     * @see Bot#initBot()
-     * @see Bot#addShutdownHook()
-     */
-    private String userStatus;
+    private HashSet<Integer> ignored;
 
     /**
      * Control count of interactions with Vk Api.
@@ -127,11 +120,17 @@ public class Bot {
         try {
             Properties properties=new Properties();
             properties.load(Bot.class.getClassLoader().getResourceAsStream("config.properties"));
+
             PROJECT_ID=properties.getProperty("project-id");
             WEATHER_KEY =properties.getProperty("weather-key");
             GOOGLE_KEY =properties.getProperty("google-key");
-            ACCESS_TOKEN=properties.getProperty("access-token");
-            USER_ID_MAIN=Integer.valueOf(properties.getProperty("user-id-main"));
+
+            GROUP_ACCESS_TOKEN =properties.getProperty("group-access-token");
+            GROUP_ID=Integer.valueOf(properties.getProperty("group-id"));
+
+            OWNER_ACCESS_TOKEN=properties.getProperty("owner-access-token");
+            OWNER_ID =Integer.valueOf(properties.getProperty("owner-id"));
+
             MEME_RESOURCES=new int[]{Integer.valueOf(properties.getProperty("meme-4ch")),
                     Integer.valueOf(properties.getProperty("meme-mdk")),
                     Integer.valueOf(properties.getProperty("meme-9gag"))};
@@ -147,21 +146,19 @@ public class Bot {
     private void initBot(){
         ignored=new HashSet<>();
         guessGame=new LinkedHashMap<>();
-        sessions=new HashSet<>();
         countOfInteractions=new AtomicInteger(0);
         VkApiClient vk=new VkApiClient(new HttpTransportClient());
-        UserActor user =new UserActor(USER_ID_MAIN,ACCESS_TOKEN);
-        initTasks(vk,user);
+        GroupActor group=new GroupActor(GROUP_ID, GROUP_ACCESS_TOKEN);
+        UserActor owner=new UserActor(OWNER_ID,OWNER_ACCESS_TOKEN);
+        initMainInteracterAndTasks(group,owner,vk);
         initAi();
         initEmojies();
-        initLongPollHandler(user.getId());
-        userStatus=interacter.getStatus();
+        initLongPollHandler();
         addShutdownHook();
         startCheckThread();
-        interacter.setStatus("VkBot is working now (there is no human user).");
-        interacter.setOnline(true);
-        interacter.sendMessageToOwner("VkBot has been started on:\nserverTime["+new Date().toString()+"]\nHello!");
-        System.out.println("\n╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
+        sendMessageToOwner("VkBot has been started on:\nserverTime["+new Date().toString()+"]\nHello!");
+        System.out.println(
+                "╔╗╔╦═══╦╗─╔╗─╔══╦╗\n" +
                 "║║║║╔══╣║─║║─║╔╗║║\n" +
                 "║╚╝║╚══╣║─║║─║║║║║\n" +
                 "║╔╗║╔══╣║─║║─║║║╠╝\n" +
@@ -195,17 +192,18 @@ public class Bot {
         emojies.put("camera","&#128249;");
         emojies.put("exclamation","&#10071;");
     }
-    private void initTasks(VkApiClient vk,UserActor user){
-        interacter =new MainApiInteracter(user,vk);
-        counter=new LikesCounter(user,vk);
+    private void initMainInteracterAndTasks(GroupActor group, UserActor owner, VkApiClient vk){
+        interacter =new MainApiInteracter(group, owner, vk);
+        counter=new LikesCounter(owner,vk);
         bitcoinRate =new BitcoinRate();
         forecast=new WeatherForecast(WEATHER_KEY);
         distanceCounter=new DistanceCounter(new GeoApiContext.Builder()
                 .apiKey(GOOGLE_KEY)
                 .build());
         randomImage=new RandomImage();
-        randomItem =new RandomVkItem(user,vk,MEME_RESOURCES);
+        randomItem =new RandomVkItem(owner,vk,MEME_RESOURCES);
         converter=new TextConverter();
+        new AutopostRandomPhotos(this);
     }
     private void initAi(){
         try {
@@ -220,10 +218,8 @@ public class Bot {
         }
 
     }
-
-
-    private void initLongPollHandler(int userId){
-        handler=new LongPollHandler(this,userId,new MessageReplier(this,emojies));
+    private void initLongPollHandler(){
+        handler=new LongPollHandler(this,OWNER_ID,new MessageReplier(this,emojies));
         handler.start();
     }
 
@@ -246,6 +242,18 @@ public class Bot {
     public void sendMessageWithVideo(int id,String text,String video){
         check();
         interacter.sendMessageWithVideo(id, text, video);
+    }
+    private void sendMessageToOwner(String text){
+        check();
+        interacter.sendMessageToOwner(text);
+    }
+
+    /**
+     * Posting method.
+     */
+    public void postPhotoToWall(File photo){
+        check();
+        interacter.postPhotoToWall(photo);
     }
 
     /**
@@ -361,17 +369,6 @@ public class Bot {
             return ignored.contains(id);
         }
     }
-    public boolean isNewSession(int id){
-        synchronized (sessions) {
-            if(sessions.contains(id)){
-                return false;
-            }
-            else {
-                sessions.add(id);
-                return true;
-            }
-        }
-    }
 
 
     /**
@@ -384,6 +381,14 @@ public class Bot {
     public UserXtrCounters getSender(String id){
         check();
         return interacter.getSender(id);
+    }
+
+    /**
+     * Membership in group checking.
+     */
+    public boolean isMember(int id){
+        check();
+        return interacter.isMember(id);
     }
 
     /**
@@ -400,11 +405,10 @@ public class Bot {
     private void addShutdownHook(){
         Runtime.getRuntime().addShutdownHook(new Thread(()->{
 
-            interacter.sendMessageToOwner("VkBot has been exited on:\nserverTime["
+            sendMessageToOwner("VkBot has been exited on:\nserverTime["
                     + new Date().toString() + "]\nBye-bye!");
-            interacter.setStatus(userStatus);
-            interacter.setOnline(false);
-            System.out.println("\n╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
+            System.out.println(
+                    "╔══╗╔╗╔╦═══╗──╔══╗╔╗╔╦═══╦╗\n" +
                     "║╔╗║║║║║╔══╝──║╔╗║║║║║╔══╣║\n" +
                     "║╚╝╚╣╚╝║╚══╦══╣╚╝╚╣╚╝║╚══╣║\n" +
                     "║╔═╗╠═╗║╔══╩══╣╔═╗╠═╗║╔══╩╝\n" +

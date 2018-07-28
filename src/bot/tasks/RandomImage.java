@@ -1,26 +1,20 @@
 package bot.tasks;
 
-import bot.Bot;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.slf4j.Logger;
 
 import java.io.*;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
+import static bot.Bot.logger;
 
 /**
  * Random image from Lorem Picsum site.
  */
 public class RandomImage {
-    private Logger logger;
-
-    public RandomImage(){
-        logger= Bot.logger;
-    }
 
     public File randomImage(){
         File photo=null;

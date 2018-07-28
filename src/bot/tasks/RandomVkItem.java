@@ -1,37 +1,34 @@
 package bot.tasks;
 
-import bot.Bot;
 import bot.utils.Pair;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.video.Video;
-
-import com.vk.api.sdk.objects.wall.WallpostFull;
-import org.slf4j.Logger;
+import com.vk.api.sdk.objects.wall.WallPostFull;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import static bot.Bot.logger;
 
 /**
  * Random item from vk`s public.
  */
 public class RandomVkItem {
-    private UserActor user;
+    private UserActor owner;
     private VkApiClient vk;
-    private Logger logger;
 
     /**
      * Publics ids.
      */
     private int[] resources;
 
-    public RandomVkItem(UserActor user, VkApiClient vk, int[] resources){
-        this.user=user;
+    public RandomVkItem(UserActor owner, VkApiClient vk, int[] resources){
+        this.owner=owner;
         this.vk=vk;
         this.resources =resources;
-        this.logger= Bot.logger;
     }
 
     /**
@@ -42,8 +39,8 @@ public class RandomVkItem {
         Pair<String,String[]> result=new Pair<>("",new String[0]);
         try {
             Random random=new Random();
-            WallpostFull post=vk.wall()
-                    .get(user)
+            WallPostFull post=vk.wall()
+                    .get(owner)
                     .ownerId(resources[random.nextInt(resources.length)])
                     .count(1)
                     .offset(random.nextInt(100))
@@ -72,7 +69,7 @@ public class RandomVkItem {
         try {
             Random random=new Random();
             Video video=vk.videos()
-                    .get(user)
+                    .get(owner)
                     .ownerId(resources[random.nextInt(resources.length)])
                     .count(1)
                     .offset(random.nextInt(100))

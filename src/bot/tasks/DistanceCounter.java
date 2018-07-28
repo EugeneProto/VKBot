@@ -1,21 +1,20 @@
 package bot.tasks;
 
-import bot.Bot;
 import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.TransitMode;
 import com.google.maps.model.TravelMode;
-import org.slf4j.Logger;
 
 import java.io.IOException;
+
+import static bot.Bot.logger;
 
 /**
  * Class for calculating time in subway using Google APIs.
  */
 public class DistanceCounter {
-    private Logger logger;
 
     /**
      * Context for connecting to Google APIs.
@@ -25,7 +24,6 @@ public class DistanceCounter {
 
     public DistanceCounter(GeoApiContext context) {
         this.context = context;
-        this.logger= Bot.logger;
     }
 
     /**

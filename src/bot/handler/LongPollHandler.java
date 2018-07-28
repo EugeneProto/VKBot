@@ -11,7 +11,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,12 +20,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
+import static bot.Bot.logger;
 
 /**
  * Long Poll logic.
  */
 public class LongPollHandler extends Thread {
-    private Logger logger;
     private MessageReplier replier;
     private Bot bot;
 
@@ -42,18 +41,12 @@ public class LongPollHandler extends Thread {
      * @see LongPollHandler#setShouldReact(boolean)
      */
     private boolean shouldReact;
+    private int ownerId;
 
-    /**
-     * Person who have launched the app id.
-     * @see LongPollHandler#handleResponse(JSONArray)
-     */
-    private Integer userId;
-
-    public LongPollHandler(Bot bot,int userId,MessageReplier replier){
-        this.logger=Bot.logger;
+    public LongPollHandler(Bot bot,int ownerId,MessageReplier replier){
         this.replier=replier;
         this.bot=bot;
-        this.userId=userId;
+        this.ownerId=ownerId;
         service= Executors.newFixedThreadPool(3);
         shouldReact=true;
     }
@@ -116,32 +109,32 @@ public class LongPollHandler extends Thread {
                 if (update.getInt(0)!=4) continue;
 
                 int flag = update.getInt(2), id = update.getInt(3);
-                boolean isIgnored = bot.isIgnored(id), isPlaying = bot.isPlaying(id),
-                        isNewSession=bot.isNewSession(id);
-                if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&!isPlaying&&id!=userId){
+                boolean isIgnored = bot.isIgnored(id), isPlaying = bot.isPlaying(id);
+
+                if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&!isPlaying&&id!=ownerId){
+
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
-                        replier.detectQueryOrParse(isNewSession?"привет": new String(update.getString(5).getBytes(),
+                        replier.detectQueryOrParse(new String(update.getString(5).getBytes(),
                                 Charset.forName("UTF-8")),sender);
                     });
-                }else if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&isPlaying&& id!=userId){
+
+                } else if(shouldReact&&((flag&2)!=2)&&id<2000000000&&!isIgnored&&isPlaying&& id!=ownerId){
+
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
                         replier.parseGame(new String(update.getString(5).getBytes(),
                                 Charset.forName("UTF-8")),sender);
-                    });
-                } else if(shouldReact&&((flag &2)==2)&&id <2000000000&&id!=userId){
-                    service.submit(()->{
-                        UserXtrCounters sender=bot.getSender(update.get(3).toString());
-                        replier.parseUser(new String(update.getString(5).getBytes(),
-                                Charset.forName("UTF-8")),sender);
+
                     });
 
-                } else if(id==userId){
+                } else if(id == ownerId){
+
                     service.submit(()->{
                         UserXtrCounters sender=bot.getSender(update.get(3).toString());
                         replier.parseAdmin(new String(update.getString(5).getBytes(),
                                 Charset.forName("UTF-8")),sender);
+
                     });
 
                 }
