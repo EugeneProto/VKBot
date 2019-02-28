@@ -33,4 +33,4 @@ Create account at [OpenWeatherMap](https://home.openweathermap.org). At `config.
 `weather-key` is OpenWeatherMap API key.
 
 ## Other information
-Now you have all for work. If you have some problems, contact me on [Twitter](https://twitter.com/EugeneTheDev) or [Telegram](https://t.me/EugeneTheDev).
+Now you have all for work. If you have some problems, contact me on [Telegram](https://t.me/EugeneTheDev).
